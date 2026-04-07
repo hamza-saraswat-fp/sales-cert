@@ -1,0 +1,1653 @@
+{
+  "questions": [
+    {
+      "col": 0,
+      "section": "User Roles / Role Based Permissions",
+      "question": "What are the different user roles within FieldPulse?",
+      "answer": "Admin, Team Manager, Service Agent, Limited Agent, Assignment User",
+      "type": "list",
+      "key_points": ["Admin", "Team Manager", "Service Agent", "Limited Agent", "Assignment User"]
+    },
+    {
+      "col": 1,
+      "section": "User Roles / Role Based Permissions",
+      "question": "At a high level, how would you describe how each of these user roles differ?",
+      "answer": "Admin users have access to everything. Team Managers and Service Agents have access to web & mobile app with configurable permissions toggled on/off by admins. Limited Agents can only access mobile app, can only upload files, use timesheets, be assigned to a team, can only see jobs directly assigned to them. Assignment Users have no access to web or mobile app, can be assigned to jobs/tasks/subtasks, receive email when assigned.",
+      "type": "long",
+      "key_points": ["Admin = full access", "Team Manager/Service Agent = web & mobile with configurable permissions", "Limited Agent = mobile only, limited visibility", "Assignment User = no app access, email notifications only"]
+    },
+    {
+      "col": 2,
+      "section": "User Roles / Role Based Permissions",
+      "question": "What persona typically matches the Admin user role?",
+      "answer": "Owner, Office Admin",
+      "type": "short",
+      "key_points": ["Owner", "Office Admin"]
+    },
+    {
+      "col": 3,
+      "section": "User Roles / Role Based Permissions",
+      "question": "What persona typically matches the Team Manager user role?",
+      "answer": "Team Lead, Managers, Master Technicians",
+      "type": "short",
+      "key_points": ["Team Lead", "Managers", "Master Technicians"]
+    },
+    {
+      "col": 4,
+      "section": "User Roles / Role Based Permissions",
+      "question": "What persona typically matches the Service Agent user role?",
+      "answer": "Technician",
+      "type": "short",
+      "key_points": ["Technician"]
+    },
+    {
+      "col": 5,
+      "section": "User Roles / Role Based Permissions",
+      "question": "What persona typically matches the Limited Agent user role?",
+      "answer": "Apprentice, contractor",
+      "type": "short",
+      "key_points": ["Apprentice", "contractor"]
+    },
+    {
+      "col": 6,
+      "section": "User Roles / Role Based Permissions",
+      "question": "What persona typically matches the Assignment User user role?",
+      "answer": "Subcontractors or even equipment/vehicles that the business might need to assign to jobs",
+      "type": "short",
+      "key_points": ["Subcontractors", "equipment", "vehicles"]
+    },
+    {
+      "col": 7,
+      "section": "User Roles / Role Based Permissions",
+      "question": "Can a FieldPulse customer create their own unique permissions?",
+      "answer": "NO! But they can toggle on/off the different available permission settings for each of their users",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "can toggle on/off available permissions"]
+    },
+    {
+      "col": 8,
+      "section": "User Roles / Role Based Permissions",
+      "question": "Can I give EACH individual technician access to a different Status Action Flow?",
+      "answer": "NO! Status Action Flows are created per role type not by each individual technician.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "per role type not individual"]
+    },
+    {
+      "col": 9,
+      "section": "User Roles / Role Based Permissions",
+      "question": "Can a Service Agent view unscheduled/unassigned jobs in the mobile app?",
+      "answer": "NO!",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 10,
+      "section": "User Roles / Role Based Permissions",
+      "question": "Can a Service Agent create Jobs assigned to themselves?",
+      "answer": "Yes, if the permission is toggled on in Company Settings.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes", "permission toggled on", "Company Settings"]
+    },
+    {
+      "col": 11,
+      "section": "User Roles / Role Based Permissions",
+      "question": "What are notable things that a Limited Agent User CANNOT do?",
+      "answer": "No access to web app, cannot set reminders, no Offline Mode, cannot open customer records from assigned Jobs, no customer list visibility, cannot change job status, No recurring jobs, No subtask visibility, No maintenance agreement visibility, No asset visibility, No financial visibility or ability to create these records",
+      "type": "long",
+      "key_points": ["no web app", "no offline mode", "cannot open customer records", "no customer list", "cannot change job status", "no recurring jobs", "no subtask visibility", "no maintenance agreement visibility", "no asset visibility", "no financial visibility"]
+    },
+    {
+      "col": 12,
+      "section": "User Roles / Role Based Permissions",
+      "question": "Do Assignment Users get access to the FieldPulse platform? How do they know where to go?",
+      "answer": "No! They get an email outlining where they need to be, the time they need to be there, and any notes.",
+      "type": "short",
+      "key_points": ["No access", "email", "location", "time", "notes"]
+    },
+    {
+      "col": 13,
+      "section": "Customer Record & Management",
+      "question": "As a service agent, what 3 fields cannot be filled out/adjusted on a Customer record in mobile?",
+      "answer": "Price Tiers, Net Due Dates for Estimates/Invoices, and Parent-Child relationship information.",
+      "type": "list",
+      "key_points": ["Price Tiers", "Net Due Dates", "Parent-Child relationship"]
+    },
+    {
+      "col": 14,
+      "section": "Customer Record & Management",
+      "question": "Can I create a new Customer record as I'm creating a Job record?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 15,
+      "section": "Customer Record & Management",
+      "question": "Can I create a new Customer record as I'm creating an Estimate/Invoice record?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 16,
+      "section": "Customer Record & Management",
+      "question": "Can I create a new Customer record as I'm creating a Project record?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 17,
+      "section": "Customer Record & Management",
+      "question": "Can I create a new Customer record as I'm creating an Asset record?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 18,
+      "section": "Customer Record & Management",
+      "question": "Can I create a new Customer record as I'm creating a Maintenance Agreement record?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 19,
+      "section": "Customer Record & Management",
+      "question": "What is the difference between Parent-Child relationships and Multi-Location/Multi-Contact?",
+      "answer": "Parent-Child: each account syncs separately to QB, flexible billing (bill to parent OR child). Multi-Location/Multi-Contact: Add multiple service locations and contacts under one OG customer record, only the main OG customer syncs to QB.",
+      "type": "long",
+      "key_points": ["Parent-Child syncs separately to QB", "bill parent or child", "Multi-Location under one customer record", "only main customer syncs to QB"]
+    },
+    {
+      "col": 20,
+      "section": "Customer Record & Management",
+      "question": "Do Net Due Dates on Parent automatically apply to Child?",
+      "answer": "The actual values don't transfer, but the 'rule' does. For example, if parent has estimates due in 15 days and invoices due in 90 days, child records will follow those same rules.",
+      "type": "long",
+      "key_points": ["actual values don't transfer", "rule/setting does transfer", "child follows parent's due date rules"]
+    },
+    {
+      "col": 21,
+      "section": "Customer Portal",
+      "question": "Where do I find each customer's unique Customer Portal login link?",
+      "answer": "Customer Record > Actions button > Copy Customer Portal Link",
+      "type": "short",
+      "key_points": ["Customer Record", "Actions button", "Copy Customer Portal Link"]
+    },
+    {
+      "col": 22,
+      "section": "Customer Portal",
+      "question": "Can a Customer Portal link be embedded into a Company's website?",
+      "answer": "NO!",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 23,
+      "section": "Customer Portal",
+      "question": "Can videos and pictures be viewed from the Customer Portal?",
+      "answer": "Yes!",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 24,
+      "section": "Customer Portal",
+      "question": "Can customers pay their Invoice records via the customer portal?",
+      "answer": "Yes, but only if the FieldPulse user has FieldPulse Payments enabled.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes", "FieldPulse Payments must be enabled"]
+    },
+    {
+      "col": 25,
+      "section": "Customer Portal",
+      "question": "In the customer portal, can a Parent customer see everything related to the Child customer?",
+      "answer": "Yes!",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 26,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "What is the difference between Projects, Jobs, and Site Visits?",
+      "answer": "Projects: folder that stores/organizes Job & Site Visit records, for long term work. Jobs: standalone or part of a Project, for work typically completed that day (standalone) or over several days/weeks (part of project). Site Visits: subcomponent of a Job record, for callbacks/go backs/return visits.",
+      "type": "long",
+      "key_points": ["Projects = folder/organizer for long-term work", "Jobs = standalone or part of project", "Site Visits = subcomponent of Job for callbacks/return visits"]
+    },
+    {
+      "col": 27,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "What are the benefits of using Site Visit records instead of creating a brand new Job?",
+      "answer": "Quicker creation, directly attached to the primary work order, all information under one primary record. Don't have to duplicate a record leaving half info in one job and half in another.",
+      "type": "long",
+      "key_points": ["quicker creation", "attached to primary work order", "all info in one place", "no duplication"]
+    },
+    {
+      "col": 28,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "If you hear 'Call Back/Go Back/Follow Up' what record type do you recommend?",
+      "answer": "Site Visit",
+      "type": "short",
+      "key_points": ["Site Visit"]
+    },
+    {
+      "col": 29,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "What is the difference between Job Notes & Field Notes?",
+      "answer": "Job Notes - carried over from Customer record and office staff adds info. Field Notes - where technicians dump their notes/findings while in the field.",
+      "type": "short",
+      "key_points": ["Job Notes = from customer record/office staff", "Field Notes = technician notes from the field"]
+    },
+    {
+      "col": 30,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "Can Job record Custom Fields change per each Job Template?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 31,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "Can I have multiple contacts listed on one Job record?",
+      "answer": "No, only one.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "only one"]
+    },
+    {
+      "col": 32,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "Can multiple Estimate and Invoice records be attached to one Job record?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 33,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "What can be attached to a Job Template?",
+      "answer": "Subtask, Material Lists, Estimate, Invoices, Forms, and Files.",
+      "type": "list",
+      "key_points": ["Subtask", "Material Lists", "Estimate", "Invoices", "Forms", "Files"]
+    },
+    {
+      "col": 34,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "What feature for scheduling the most qualified technician? What needs to be done first?",
+      "answer": "The Find Availability feature on the Job record. User skillset tags have to be created in Company Settings first.",
+      "type": "short",
+      "key_points": ["Find Availability", "skillset tags", "Company Settings"]
+    },
+    {
+      "col": 35,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "What is a Task in FieldPulse? Give 3 examples.",
+      "answer": "Tasks are non-billable events that appear on the calendar. Don't need to be assigned to any specific customer. Examples: PTO, internal meetings, lunch breaks, errands.",
+      "type": "long",
+      "key_points": ["non-billable events", "on calendar", "not assigned to customer", "examples like PTO/meetings/lunch/errands"]
+    },
+    {
+      "col": 36,
+      "section": "General Knowledge: Projects, Jobs, Site Visits, & Tasks",
+      "question": "How does a Task get added to the schedule?",
+      "answer": "Create the Task Category in Company Settings. Then act as if creating a Job, but select Create Task. Complete the Task Category field, select team members, and date/time.",
+      "type": "long",
+      "key_points": ["Task Category in Company Settings", "Create Task instead of Job", "Task Category field", "team members", "date/time"]
+    },
+    {
+      "col": 37,
+      "section": "ClearPath",
+      "question": "ClearPath pitch in 4 sentences or less",
+      "answer": "With ClearPath, you, as a business owner, can customize the instructions and actions available to your technicians during each step of their workflow. This ensures that your technicians no longer question what to do or where to go within the mobile app; everything they need will be on one main screen.",
+      "type": "long",
+      "key_points": ["customize instructions/actions", "per step of workflow", "technicians know what to do", "mobile app", "one main screen"]
+    },
+    {
+      "col": 38,
+      "section": "ClearPath",
+      "question": "List at least 3 value props of ClearPath.",
+      "answer": "Consistency for customers because each tech completes job same way; save time because guesswork removed; easier onboarding of new team members; save time with templates for Estimates and Forms; save time with default prepopulated text for comments.",
+      "type": "long",
+      "key_points": ["consistency", "save time/remove guesswork", "easier onboarding", "templates", "prepopulated text"]
+    },
+    {
+      "col": 39,
+      "section": "ClearPath",
+      "question": "Describe the relationship between Job Custom Status Workflows, Status Action Flows, and Focus View",
+      "answer": "Job Custom Status Workflows are the high-level Statuses common to a type of work. Status Action Flows allow the business to outline the steps and instructions for each specific job they perform (e.g., Shower Installation vs Toilet Installation). Focus View provides the custom mobile experience that neatly displays all of this information for each technician.",
+      "type": "long",
+      "key_points": ["Custom Status Workflows = high-level statuses", "Status Action Flows = specific steps/instructions per job type", "Focus View = custom mobile experience"]
+    },
+    {
+      "col": 40,
+      "section": "ClearPath",
+      "question": "Are Action Buttons, Status Instructions, and Widgets all required at all times?",
+      "answer": "Nope! A customer can choose to just use Action Buttons and/or Status Instructions OR take it further by enabling Focus View and utilizing Widgets.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "can choose which to use", "Widgets require Focus View"]
+    },
+    {
+      "col": 41,
+      "section": "ClearPath",
+      "question": "Are technicians always locked into Focus View?",
+      "answer": "You can decide on a per Status basis when you want technicians to be locked into Focus View.",
+      "type": "short",
+      "key_points": ["No", "per Status basis"]
+    },
+    {
+      "col": 42,
+      "section": "ClearPath",
+      "question": "Attach a photo of you viewing a ClearPath flow from the mobile app.",
+      "answer": "SCREENSHOT",
+      "type": "screenshot",
+      "key_points": []
+    },
+    {
+      "col": 43,
+      "section": "Custom Status Workflows",
+      "question": "What can we create Custom Status Workflows for?",
+      "answer": "Job, Projects, Site Visits, Material Lists, Custom Forms, Estimates, and Invoices",
+      "type": "list",
+      "key_points": ["Job", "Projects", "Site Visits", "Material Lists", "Custom Forms", "Estimates", "Invoices"]
+    },
+    {
+      "col": 44,
+      "section": "Custom Status Workflows",
+      "question": "What are the benefits of some Status types in Custom Status Workflows?",
+      "answer": "Travel Time and In Progress status types track/log time. Pending status type pauses the time tracking.",
+      "type": "short",
+      "key_points": ["Travel Time tracks time", "In Progress tracks time", "Pending pauses time tracking"]
+    },
+    {
+      "col": 45,
+      "section": "Custom Status Workflows",
+      "question": "What two Status Types are required to save a Custom Status Workflow?",
+      "answer": "A 'New' and 'Completed' type of status are required.",
+      "type": "list",
+      "key_points": ["New", "Completed"]
+    },
+    {
+      "col": 46,
+      "section": "Schedule",
+      "question": "What are the 4 schedule views in FieldPulse?",
+      "answer": "List, Calendar, Dispatch, & Map view",
+      "type": "list",
+      "key_points": ["List", "Calendar", "Dispatch", "Map"]
+    },
+    {
+      "col": 47,
+      "section": "Schedule",
+      "question": "Can the Schedule be printed?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 48,
+      "section": "Schedule",
+      "question": "What does the Hourglass button on the Schedule do?",
+      "answer": "View all unscheduled and unassigned Jobs.",
+      "type": "short",
+      "key_points": ["unscheduled", "unassigned", "Jobs"]
+    },
+    {
+      "col": 49,
+      "section": "Schedule",
+      "question": "How can someone view upcoming Jobs associated with a Maintenance Agreement?",
+      "answer": "Click Hourglass button, then in slide out window select Filter button, then in 'Is a Maintenance Agreement Job' field select 'Yes'.",
+      "type": "long",
+      "key_points": ["Hourglass button", "Filter button", "Is a Maintenance Agreement Job", "Yes"]
+    },
+    {
+      "col": 50,
+      "section": "Schedule",
+      "question": "What does the '...' near the Hourglass button allow customers to do?",
+      "answer": "Adjust the color coding on the Schedule. Color coding can either mirror the Statuses of each Job OR each team member.",
+      "type": "short",
+      "key_points": ["color coding", "statuses", "team member"]
+    },
+    {
+      "col": 51,
+      "section": "Schedule",
+      "question": "How does Route Optimization work? What are the limitations?",
+      "answer": "Schedule a Route or Reassign Jobs from a map view. Limitation is that this process is manual and not automated.",
+      "type": "short",
+      "key_points": ["Schedule Route or Reassign Jobs", "map view", "manual", "not automated"]
+    },
+    {
+      "col": 52,
+      "section": "Booking Portal",
+      "question": "How do I get access to the Booking Portal?",
+      "answer": "Must be enabled from Features & Plugins page. Then configure via Company Settings > Booking Portal tab.",
+      "type": "short",
+      "key_points": ["Features & Plugins", "Company Settings", "Booking Portal tab"]
+    },
+    {
+      "col": 53,
+      "section": "Booking Portal",
+      "question": "Do Booking Portal requests auto-create a new Customer record?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 54,
+      "section": "Booking Portal",
+      "question": "Can end customers attach pictures and videos to Booking Portal requests?",
+      "answer": "Yes, they can attach files, photos, and videos, but only if the FieldPulse user configured their Booking Portal that way.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes", "if configured by FieldPulse user"]
+    },
+    {
+      "col": 55,
+      "section": "Booking Portal",
+      "question": "How do I embed the Booking Portal on my website?",
+      "answer": "Embed the iFrame for your Booking Portal URL found in Company Settings > Booking Portal tab.",
+      "type": "short",
+      "key_points": ["iFrame", "Booking Portal URL", "Company Settings"]
+    },
+    {
+      "col": 56,
+      "section": "Maintenance Agreements & Assets",
+      "question": "What is an Asset in FieldPulse? List 2 examples.",
+      "answer": "Asset records allow users to track information about assets they install and/or service for customers as well as track internal equipment. Examples: Water heater, employee computers/phones.",
+      "type": "long",
+      "key_points": ["track assets installed/serviced for customers", "track internal equipment", "at least 2 examples"]
+    },
+    {
+      "col": 57,
+      "section": "Maintenance Agreements & Assets",
+      "question": "Why should we showcase Assets before jumping into Maintenance Agreements?",
+      "answer": "The flow is better on a live demo. On the Asset record we can show how to relate the Asset to other record types like Maintenance Agreements and Jobs.",
+      "type": "short",
+      "key_points": ["better demo flow", "show relationship to other records", "Maintenance Agreements", "Jobs"]
+    },
+    {
+      "col": 58,
+      "section": "Maintenance Agreements & Assets",
+      "question": "Can a Service Agent scan barcodes on assets?",
+      "answer": "Yes!",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 59,
+      "section": "Maintenance Agreements & Assets",
+      "question": "What is a Maintenance Agreement in FieldPulse?",
+      "answer": "A Maintenance Agreement outlines the times a business will go out and perform maintenance on something they installed. Service frequencies typically quarterly or semi-annual. Contracts can be attached after the record has been created and saved.",
+      "type": "long",
+      "key_points": ["outlines maintenance schedule", "service frequencies", "contracts attached after creation"]
+    },
+    {
+      "col": 60,
+      "section": "Maintenance Agreements & Assets",
+      "question": "Best practice for MA occurrence and billing creation?",
+      "answer": "All MA occurrences and billing details must live strictly under the MA record itself, not the origin Job or on an Estimate/Invoice record.",
+      "type": "short",
+      "key_points": ["under MA record itself", "not on Job", "not on Estimate/Invoice"]
+    },
+    {
+      "col": 61,
+      "section": "Maintenance Agreements & Assets",
+      "question": "Can multiple assets be listed on one invoice and billed together?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 62,
+      "section": "Maintenance Agreements & Assets",
+      "question": "How can a technician review work order history for a specific asset?",
+      "answer": "From the Asset record, click the Related Jobs subtab.",
+      "type": "short",
+      "key_points": ["Asset record", "Related Jobs subtab"]
+    },
+    {
+      "col": 63,
+      "section": "Maintenance Agreements & Assets",
+      "question": "Two ways GPS coordinates can be used to find exact locations?",
+      "answer": "1) Asset record GPS coordinates - attach coordinates to an asset for navigation. 2) GPS coordinates in Address Line 1 of Customer record - for properties without conventional addresses.",
+      "type": "long",
+      "key_points": ["Asset record GPS coordinates", "Address Line 1 of Customer record", "two distinct methods"]
+    },
+    {
+      "col": 64,
+      "section": "Recurring Services & Billing",
+      "question": "Is Recurring Jobs standalone or always tied to Maintenance Agreement?",
+      "answer": "Yes, Recurring Jobs is a standalone feature. Recurring Billing houses Invoice records for Recurring Jobs. Maintenance Agreements house Job records and Invoice records separately.",
+      "type": "short",
+      "key_points": ["standalone feature", "not always tied to MA"]
+    },
+    {
+      "col": 65,
+      "section": "Recurring Services & Billing",
+      "question": "Is ACH supported in Recurring Billing?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 66,
+      "section": "Recurring Services & Billing",
+      "question": "Do we currently have Recurring Billing templates?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 67,
+      "section": "Recurring Services & Billing",
+      "question": "Can Recurring Billing be created in the mobile app?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 68,
+      "section": "Recurring Services & Billing",
+      "question": "Do saved credit cards pull into Recurring Billing?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 69,
+      "section": "Material Lists",
+      "question": "How can Material Lists be used? Give two examples.",
+      "answer": "1) Go List/Checklist for technician to load truck with needed tools/materials. 2) Pre Estimate Step - add items to Material List for billing, inventory deducted at Completed status, then pull items into Estimate or Invoice.",
+      "type": "long",
+      "key_points": ["Go List/Checklist for loading truck", "Pre Estimate step for billing items", "two distinct examples"]
+    },
+    {
+      "col": 70,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "What is a Line Item in FieldPulse?",
+      "answer": "A Line Item is anything customers need to complete a Job - parts, materials, labor and overhead.",
+      "type": "short",
+      "key_points": ["parts", "materials", "labor", "overhead", "needed to complete a job"]
+    },
+    {
+      "col": 71,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "How can we describe a Job/Service in terms of Estimate & Invoice creation?",
+      "answer": "A job/service is a collection of Line Items; what is needed to complete the job and charge the end customer.",
+      "type": "short",
+      "key_points": ["collection of Line Items", "what's needed to complete job and charge customer"]
+    },
+    {
+      "col": 72,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "What is the purpose of an Expiration Date on an Estimate?",
+      "answer": "Sets a time limit for how long quoted prices and terms are valid. Protects against price volatility. Encourages timely customer decisions.",
+      "type": "long",
+      "key_points": ["time limit for pricing", "protects against price changes", "encourages timely decisions"]
+    },
+    {
+      "col": 73,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "What are Bundles? Where do I create them?",
+      "answer": "Bundles are created in Company Settings and group together services and parts commonly added together. Save time by adding multiple items at once. Next best thing if not ready for Pricebook.",
+      "type": "short",
+      "key_points": ["Company Settings", "group services and parts", "save time", "alternative to Pricebook"]
+    },
+    {
+      "col": 74,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "How many Estimate options can be added?",
+      "answer": "30 Estimate options, but best practice is 3 (Good, Better, Best).",
+      "type": "short",
+      "key_points": ["30", "best practice 3"]
+    },
+    {
+      "col": 75,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "When is it crucial for a Contract to be attached to an Estimate?",
+      "answer": "When the user is looking to collect a signature on the Estimate in person/face-to-face with their customer.",
+      "type": "short",
+      "key_points": ["collect signature", "in person", "face-to-face"]
+    },
+    {
+      "col": 76,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "How many Contracts can be attached to an Estimate or Invoice?",
+      "answer": "Only one.",
+      "type": "short",
+      "key_points": ["one", "1"]
+    },
+    {
+      "col": 77,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "Can every FieldPulse user request a down deposit on an Estimate?",
+      "answer": "MUST HAVE FIELDPULSE PAYMENTS ENABLED. On Draft Estimate click View Estimate, then Email to Customer, enter Payment Request Amount.",
+      "type": "long",
+      "key_points": ["must have FieldPulse Payments enabled", "not every user", "View Estimate", "Email to Customer", "Payment Request Amount"]
+    },
+    {
+      "col": 78,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "Can a voice recording be attached to an Estimate or Invoice?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 79,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "Can a user leverage different logos and branding from one Estimate to the next?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 80,
+      "section": "General Knowledge: Estimates, Invoices, Contracts",
+      "question": "What limitations of child record estimate/invoice workflow cause problems?",
+      "answer": "The invoice remains tied to the child record, so you don't get true billing from parent to child. For proper parent-level billing the invoice must be created under the parent account.",
+      "type": "long",
+      "key_points": ["invoice tied to child record", "no true parent-to-child billing", "invoice must be created under parent"]
+    },
+    {
+      "col": 81,
+      "section": "Inventory",
+      "question": "Difference between standard and Serialized Inventory tracking?",
+      "answer": "Standard tracks quantities of identical items in bulk. Serialized tracks each individual item with a unique serial number. Serialized has preconfigured Asset templates where serial number auto-fills.",
+      "type": "short",
+      "key_points": ["standard = bulk quantities", "serialized = unique identifier per item", "serialized has asset templates"]
+    },
+    {
+      "col": 82,
+      "section": "Inventory",
+      "question": "Can Custom Fields be added to Inventory Line Items? Give examples.",
+      "answer": "Yes! Examples: Aisle, Shelf, Bin Number.",
+      "type": "short",
+      "key_points": ["Yes", "examples like Aisle/Shelf/Bin Number"]
+    },
+    {
+      "col": 83,
+      "section": "Inventory",
+      "question": "When does Inventory get deducted?",
+      "answer": "Users select deduction preference: Material List (at Completed status) or Invoice (at Invoiced/Finalized status).",
+      "type": "short",
+      "key_points": ["Material List at Completed", "Invoice at Invoiced/Finalized", "user selects preference"]
+    },
+    {
+      "col": 84,
+      "section": "Inventory",
+      "question": "Can a user decide which hub Inventory deducts from?",
+      "answer": "No, Inventory deducted from the Material List or Invoice creator's assigned hub every time.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "creator's assigned hub"]
+    },
+    {
+      "col": 85,
+      "section": "Inventory",
+      "question": "Can FieldPulse support truck-swapping technicians for Inventory?",
+      "answer": "No, doesn't track cross-truck usage in real time. Would be a huge manual lift, should not recommend.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "no real-time cross-truck tracking", "huge manual lift"]
+    },
+    {
+      "col": 86,
+      "section": "Inventory",
+      "question": "How can supplier/vendor website links be saved for quick access?",
+      "answer": "Via Item List, add URL to Item Link section for each Line Item (Mobile) or click Add Link button next to Unit Cost (Web).",
+      "type": "short",
+      "key_points": ["Item List", "Item Link section", "mobile and web", "Add Link button"]
+    },
+    {
+      "col": 87,
+      "section": "Inventory",
+      "question": "Can FieldPulse validate inventory availability in real time?",
+      "answer": "No. Inventory levels are not checked in real time when adding items to estimates, invoices, or material lists.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "not checked in real time"]
+    },
+    {
+      "col": 88,
+      "section": "Inventory",
+      "question": "Best practice for reallocating materials after bulk shipment?",
+      "answer": "Manually move materials to trucks. Cannot have POs send inventory to multiple warehouses or trucks. Mobile: adjust quantities with +/- buttons per Hub. Web: similar manual adjustment.",
+      "type": "long",
+      "key_points": ["manual process", "cannot auto-distribute from POs", "mobile +/- buttons", "web adjustment"]
+    },
+    {
+      "col": 89,
+      "section": "Inventory",
+      "question": "How to keep track of expenses in FieldPulse?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 90,
+      "section": "Purchase Orders",
+      "question": "How many suppliers/vendors on one PO?",
+      "answer": "Only one.",
+      "type": "short",
+      "key_points": ["one", "1"]
+    },
+    {
+      "col": 91,
+      "section": "Purchase Orders",
+      "question": "Does FieldPulse support partial receiving on a PO?",
+      "answer": "No!",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 92,
+      "section": "Purchase Orders",
+      "question": "What is Supplier Chat? Value props?",
+      "answer": "Direct access to 8,500+ suppliers across 25 industries. Free feature. Can ask about inventory, pricing, order status, how to place an order. Can create PO and send via Supplier Chat. Available on web AND mobile.",
+      "type": "long",
+      "key_points": ["8500+ suppliers", "25 industries", "free feature", "inventory/pricing/orders", "web and mobile", "send POs"]
+    },
+    {
+      "col": 93,
+      "section": "Commission",
+      "question": "What Commission structures are available?",
+      "answer": "Company Default Commission, User-Specific Commission, Flat Rate Job Commissions (Pricebook), Ad-Hoc Commission.",
+      "type": "list",
+      "key_points": ["Company Default", "User-Specific", "Flat Rate Job (Pricebook)", "Ad-Hoc"]
+    },
+    {
+      "col": 94,
+      "section": "Commission",
+      "question": "Can Commission be split?",
+      "answer": "Yes, but at the moment this is a manual process, not automatic.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes", "manual process"]
+    },
+    {
+      "col": 95,
+      "section": "Commission",
+      "question": "Can FieldPulse run payroll or integrate with payroll software?",
+      "answer": "No. Can bring in time but that's it. Export time and use outside of platform.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "can export time"]
+    },
+    {
+      "col": 96,
+      "section": "Pricebook",
+      "question": "Value props of Pricebook? How explain to prospect?",
+      "answer": "Simple tool for technicians to create estimates/invoices quickly using preset flat-rate items and bundles. Build custom estimate/invoice on-site with tiered choices (Good/Better/Best). Present for signature and payment. Makes upselling easier, reduces quoting time, helps close jobs in the field.",
+      "type": "long",
+      "key_points": ["flat-rate items", "tiered choices Good/Better/Best", "upselling", "reduces quoting time", "close in field"]
+    },
+    {
+      "col": 97,
+      "section": "Pricebook",
+      "question": "What does flat rate pricing mean?",
+      "answer": "One set price for a job or service instead of billing by hour or by each part. Customer knows total cost upfront.",
+      "type": "short",
+      "key_points": ["one set price", "not hourly", "customer knows cost upfront"]
+    },
+    {
+      "col": 98,
+      "section": "Pricebook",
+      "question": "Can Price Tiers be managed through Pricebook?",
+      "answer": "No, Price Tiers are tied to Customer records not Pricebook.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "tied to Customer records"]
+    },
+    {
+      "col": 99,
+      "section": "Pricebook",
+      "question": "Can each Pricebook have different permissions per user?",
+      "answer": "No! Permissions cannot be set per pricebook. Access control applies to the Pricebook feature as a whole.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "feature-wide access control"]
+    },
+    {
+      "col": 100,
+      "section": "Pricebook",
+      "question": "What industries utilize Pricebook the most?",
+      "answer": "HVAC, Plumbing, Garage Door",
+      "type": "list",
+      "key_points": ["HVAC", "Plumbing", "Garage Door"]
+    },
+    {
+      "col": 101,
+      "section": "Financing & Payments",
+      "question": "Main differences between Wisetack and Acorn Financing?",
+      "answer": "Wisetack: 3.9% convenience fee, $500-$25,000 loan range, FieldPulse user must apply (US based, 1 year in business, $150K revenue, 10+ reviews at 4.5+ stars). Acorn: No application for FieldPulse user, end customer applies directly, Acorn wires funds to end customer, $1,000-$100,000 loan range.",
+      "type": "long",
+      "key_points": ["Wisetack: 3.9% fee, $500-25K, user must apply/qualify", "Acorn: no application, end customer applies, $1K-100K, funds to end customer"]
+    },
+    {
+      "col": 102,
+      "section": "Financing & Payments",
+      "question": "Which financing to recommend and when to offer?",
+      "answer": "Acorn Financing. Free for users, no application. 12+ lenders. Offer on Estimates (not Invoices) because funds take 1-2 business days. Customers may choose 'best' option since they have funding.",
+      "type": "long",
+      "key_points": ["Acorn", "free", "no application", "offer on Estimates", "funds take 1-2 days"]
+    },
+    {
+      "col": 103,
+      "section": "Financing & Payments",
+      "question": "Can both Wisetack and Acorn be offered on Estimate records?",
+      "answer": "Nope! Must choose one or the other.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "choose one"]
+    },
+    {
+      "col": 104,
+      "section": "Financing & Payments",
+      "question": "Response to customer wanting to keep their own financing company?",
+      "answer": "Wisetack and Acorn are the only native options. Can add a link to their existing provider in the default Estimate email body.",
+      "type": "long",
+      "key_points": ["only native options are Wisetack/Acorn", "add link in Estimate email body"]
+    },
+    {
+      "col": 105,
+      "section": "Financing & Payments",
+      "question": "Who are our 2 main Fintech payment partners?",
+      "answer": "Rainforest & CardConnect",
+      "type": "list",
+      "key_points": ["Rainforest", "CardConnect"]
+    },
+    {
+      "col": 106,
+      "section": "Financing & Payments",
+      "question": "Can a user cancel FieldPulse Payments at any time?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 107,
+      "section": "Financing & Payments",
+      "question": "Do we charge extra for American Express?",
+      "answer": "Nope! Huge value prop.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 108,
+      "section": "Financing & Payments",
+      "question": "Monthly fee for FieldPulse Payments? Can it be waived?",
+      "answer": "$9. Yes, can be waived if Premium Support is purchased.",
+      "type": "short",
+      "key_points": ["$9", "waived with Premium Support"]
+    },
+    {
+      "col": 109,
+      "section": "Financing & Payments",
+      "question": "Standard FieldPulse Payments (Rainforest) fees?",
+      "answer": "3% + $0.25 per transaction & 1% ACH",
+      "type": "short",
+      "key_points": ["3%", "$0.25", "1% ACH"]
+    },
+    {
+      "col": 110,
+      "section": "Financing & Payments",
+      "question": "Fees with Next-Business Day Funding?",
+      "answer": "3.5% + $0.25 per transaction & 1.5% ACH",
+      "type": "short",
+      "key_points": ["3.5%", "$0.25", "1.5% ACH"]
+    },
+    {
+      "col": 111,
+      "section": "Financing & Payments",
+      "question": "What is Card Fee Recovery (CFR)?",
+      "answer": "A compliant dual pricing program that allows customers to pass on card processing fees to their customers.",
+      "type": "short",
+      "key_points": ["dual pricing", "pass on card fees", "compliant"]
+    },
+    {
+      "col": 112,
+      "section": "Financing & Payments",
+      "question": "What does CFR look like in FieldPulse?",
+      "answer": "CFR dynamically increases line item price by chosen %. Invoice displays higher Total Card Price (with fees) and Total ACH/Cash Price (base price, since illegal to pass on ACH fees).",
+      "type": "long",
+      "key_points": ["dynamically increases line item price", "Total Card Price", "Total ACH/Cash Price", "illegal to pass on ACH fees"]
+    },
+    {
+      "col": 113,
+      "section": "Financing & Payments",
+      "question": "Can customer choose what % of fees to pass on with CFR?",
+      "answer": "Yes! Recommends 3%, but can pass on whatever they want.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes", "recommends 3%", "flexible"]
+    },
+    {
+      "col": 114,
+      "section": "Financing & Payments",
+      "question": "Fees with Card Fee Recovery?",
+      "answer": "4.0% & 1.0% ACH (ACH fees cannot be passed on)",
+      "type": "short",
+      "key_points": ["4%", "1% ACH"]
+    },
+    {
+      "col": 115,
+      "section": "Financing & Payments",
+      "question": "Fees with Next-Business Day Funding AND CFR?",
+      "answer": "4.5% & 1.5% ACH (ACH fees cannot be passed on)",
+      "type": "short",
+      "key_points": ["4.5%", "1.5% ACH"]
+    },
+    {
+      "col": 116,
+      "section": "Financing & Payments",
+      "question": "Does Rainforest have automated monthly statements?",
+      "answer": "No automated monthly statements. Users get FP Payments tab with dynamic reports for deposits, payments, chargebacks. Can export data.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No automated statements", "FP Payments tab", "dynamic reports", "can export"]
+    },
+    {
+      "col": 117,
+      "section": "Financing & Payments",
+      "question": "Is FieldPulse Payments PCI Compliant?",
+      "answer": "Yes, PCI Level 1 and SOC 2 compliant.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes", "PCI Level 1", "SOC 2"]
+    },
+    {
+      "col": 118,
+      "section": "Reporting",
+      "question": "Why is Reporting important?",
+      "answer": "Informed decision-making, performance tracking (KPIs), enhanced customer service, operational efficiency, financial management.",
+      "type": "long",
+      "key_points": ["decision-making", "performance tracking", "customer service", "operational efficiency", "financial management"]
+    },
+    {
+      "col": 119,
+      "section": "Reporting",
+      "question": "What user roles have access to Reporting?",
+      "answer": "Admin & Team Managers",
+      "type": "list",
+      "key_points": ["Admin", "Team Managers"]
+    },
+    {
+      "col": 120,
+      "section": "Reporting",
+      "question": "Is Reporting available in mobile app?",
+      "answer": "No!",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 121,
+      "section": "Reporting",
+      "question": "How is a visual graph/chart created in Reporting?",
+      "answer": "Run report, highlight data, right click or double click, select Chart, make edits. Yes it can be added to Dashboard.",
+      "type": "long",
+      "key_points": ["run report", "highlight data", "right click/double click", "select Chart", "can add to Dashboard"]
+    },
+    {
+      "col": 122,
+      "section": "Reporting",
+      "question": "Can you create custom dashboards for different user roles?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 123,
+      "section": "Reporting",
+      "question": "How to build a report for technician callbacks?",
+      "answer": "Select month date range > Site Visit report > group by technician.",
+      "type": "short",
+      "key_points": ["month date range", "Site Visit report", "group by technician"]
+    },
+    {
+      "col": 124,
+      "section": "Reporting",
+      "question": "Can one report pull all data in FieldPulse?",
+      "answer": "No. Reporting is per record type.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "per record type"]
+    },
+    {
+      "col": 125,
+      "section": "Mobile App",
+      "question": "Are custom Dashboards available in mobile app?",
+      "answer": "No. Pulse Dashboard shows Jobs and Timesheets.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "Pulse Dashboard", "Jobs and Timesheets"]
+    },
+    {
+      "col": 126,
+      "section": "Mobile App",
+      "question": "Can unscheduled jobs be scheduled from mobile app Schedule?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 127,
+      "section": "Mobile App",
+      "question": "Can technicians take videos in mobile app?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 128,
+      "section": "Mobile App",
+      "question": "What two actions trigger GPS location pins?",
+      "answer": "When technician advances through Job Statuses and when they clock in and clock out.",
+      "type": "list",
+      "key_points": ["advancing Job Statuses", "clock in/clock out"]
+    },
+    {
+      "col": 129,
+      "section": "Mobile App",
+      "question": "Which GPS location is saved and viewable whenever?",
+      "answer": "Only the clock in/out location. Cannot view history of where Status was changed.",
+      "type": "short",
+      "key_points": ["clock in/out location only", "cannot view status change location history"]
+    },
+    {
+      "col": 130,
+      "section": "Mobile App",
+      "question": "Where to open Engage in mobile app?",
+      "answer": "Click Profile icon in top left corner, then click Open Engage button.",
+      "type": "short",
+      "key_points": ["Profile icon", "top left", "Open Engage button"]
+    },
+    {
+      "col": 131,
+      "section": "Offline Mode",
+      "question": "Can all user roles access Offline Mode?",
+      "answer": "No! Only Admin, Team Managers, and Service Agents.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "Admin", "Team Managers", "Service Agents only"]
+    },
+    {
+      "col": 132,
+      "section": "Offline Mode",
+      "question": "What can be done in Offline Mode?",
+      "answer": "Whole app is NOT accessible. Customers: cache related customers, access/edit 200 existing Custom Forms, create unlimited new draft forms. Jobs: cache 1 week, change status, upload 50 photos, save notes, access/edit 200 forms. Projects: cache 1 week, access/edit 200 forms. Custom Forms: up to 20 templates. Estimates & Invoices: cache 600 total, search 10K line items, view cached payments, preview finalized records, gather signatures, update status, 100 estimate/100 invoice templates. Cannot: collect payments, generate PDF. New drafts: can create linked to records, cannot preview/convert/collect signatures/payments/PDF.",
+      "type": "long",
+      "key_points": ["whole app NOT accessible", "customers cached", "jobs cached 1 week", "can change status", "50 photos", "600 estimates/invoices", "cannot collect payments", "cannot generate PDF"]
+    },
+    {
+      "col": 133,
+      "section": "Engage",
+      "question": "What is 10DLC compliance?",
+      "answer": "All numbers for SMS to U.S. numbers must be approved through The Campaign Registry (TCR). Industry-wide compliance program enforced by mobile carriers to reduce spam and protect consumers.",
+      "type": "long",
+      "key_points": ["Campaign Registry TCR", "industry-wide", "mobile carriers", "reduce spam", "protect consumers"]
+    },
+    {
+      "col": 134,
+      "section": "Engage",
+      "question": "What is the two-step 10DLC compliance process?",
+      "answer": "1) Brand Registration: submitting business details. 2) Campaign Registration: publishing SMS compliance pages on user's website (Facebook groups not accepted).",
+      "type": "list",
+      "key_points": ["Brand Registration", "Campaign Registration", "compliance pages on website"]
+    },
+    {
+      "col": 135,
+      "section": "Engage",
+      "question": "Two ways a phone number can be ported into Engage?",
+      "answer": "Standard Port in Process (from most providers, LOA + latest bill, submit port request in Twilio). Twilio-to-Twilio Process (submit Twilio support ticket).",
+      "type": "list",
+      "key_points": ["Standard Port", "Twilio-to-Twilio"]
+    },
+    {
+      "col": 136,
+      "section": "Engage",
+      "question": "Timeline for each port-in process?",
+      "answer": "Standard: 3-5 weeks. Twilio-to-Twilio: Same day to 3 days.",
+      "type": "short",
+      "key_points": ["Standard 3-5 weeks", "Twilio-to-Twilio same day to 3 days"]
+    },
+    {
+      "col": 137,
+      "section": "Engage",
+      "question": "Can Engage support extensions?",
+      "answer": "Engage does not support extensions. IVR on main number requires routing to different line. Calls cannot transfer back to same number without loops.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No extensions", "IVR requires different lines"]
+    },
+    {
+      "col": 138,
+      "section": "Engage",
+      "question": "Do call recordings expire or get deleted?",
+      "answer": "No, stored indefinitely. Can download from Call History or Reporting feature.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "stored indefinitely", "downloadable"]
+    },
+    {
+      "col": 139,
+      "section": "QuickBooks",
+      "question": "What versions of QB Desktop does FP integrate with?",
+      "answer": "Current year through last two years (e.g., 2024 and newer in 2026). Cannot be QB Desktop for Mac (PC Only).",
+      "type": "short",
+      "key_points": ["current year through last 2 years", "PC only", "no Mac"]
+    },
+    {
+      "col": 140,
+      "section": "QuickBooks",
+      "question": "What ensures QB Desktop sync is successful?",
+      "answer": "Sleep mode must be disabled, stable internet connection, disable notifications & communication triggers.",
+      "type": "list",
+      "key_points": ["disable sleep mode", "stable internet", "disable notifications/communication triggers"]
+    },
+    {
+      "col": 141,
+      "section": "QuickBooks",
+      "question": "Does FP integrate with free edition of QB Online?",
+      "answer": "No.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 142,
+      "section": "QuickBooks",
+      "question": "What editions of QB Desktop does FP integrate with?",
+      "answer": "Contractor, Pro, Premier, and Enterprise",
+      "type": "list",
+      "key_points": ["Contractor", "Pro", "Premier", "Enterprise"]
+    },
+    {
+      "col": 143,
+      "section": "QuickBooks",
+      "question": "How many QB accounts can sync to one FP account?",
+      "answer": "Only one.",
+      "type": "short",
+      "key_points": ["one", "1"]
+    },
+    {
+      "col": 144,
+      "section": "QuickBooks",
+      "question": "How many FP accounts can sync to one QB account?",
+      "answer": "Only one.",
+      "type": "short",
+      "key_points": ["one", "1"]
+    },
+    {
+      "col": 145,
+      "section": "QuickBooks",
+      "question": "How do Job records sync with QB?",
+      "answer": "They do NOT sync.",
+      "type": "short",
+      "key_points": ["do not sync"]
+    },
+    {
+      "col": 146,
+      "section": "QuickBooks",
+      "question": "Can QB Projects sync into FP?",
+      "answer": "Yes, but not recommended because they sync as Related Customers.",
+      "type": "short",
+      "key_points": ["Yes but not recommended", "sync as Related Customers"]
+    },
+    {
+      "col": 147,
+      "section": "QuickBooks",
+      "question": "What data syncs from QB Online? One way or two way?",
+      "answer": "Customers (two way), Line Items (two way), Estimates (two way), Invoices (two way), Payments (two way), Purchase Orders (two way), Vendors (two way)",
+      "type": "long",
+      "key_points": ["Customers two-way", "Line Items two-way", "Estimates two-way", "Invoices two-way", "Payments two-way", "Purchase Orders two-way", "Vendors two-way"]
+    },
+    {
+      "col": 148,
+      "section": "QuickBooks",
+      "question": "What data syncs from QB Desktop? One way or two way?",
+      "answer": "Customers (two way), Line Items (two way), Estimates (two way), Invoices (two way), Payments (two way), Purchase Orders (ONE WAY - FP to QB)",
+      "type": "long",
+      "key_points": ["Customers two-way", "Line Items two-way", "Estimates two-way", "Invoices two-way", "Payments two-way", "Purchase Orders ONE WAY FP to QB"]
+    },
+    {
+      "col": 149,
+      "section": "QuickBooks",
+      "question": "What is a Business Class in QB?",
+      "answer": "Classes categorize transactions into meaningful segments such as departments and locations. Track profitability and expenses by specific areas.",
+      "type": "short",
+      "key_points": ["categorize transactions", "departments/locations", "track profitability"]
+    },
+    {
+      "col": 150,
+      "section": "QuickBooks",
+      "question": "What is a Sales Account in QB?",
+      "answer": "Income account that records revenue from products and services, appears on Profit & Loss report.",
+      "type": "short",
+      "key_points": ["income account", "revenue", "Profit & Loss report"]
+    },
+    {
+      "col": 151,
+      "section": "QuickBooks",
+      "question": "When does an Estimate/Invoice sync to QB?",
+      "answer": "Estimate syncs when in Sent type of Status. Invoice syncs when in Invoiced type of Status.",
+      "type": "short",
+      "key_points": ["Estimate at Sent status", "Invoice at Invoiced status"]
+    },
+    {
+      "col": 152,
+      "section": "QuickBooks",
+      "question": "Does Inventory sync from both QB Online and Desktop?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 153,
+      "section": "QuickBooks",
+      "question": "How does Inventory Quantity sync?",
+      "answer": "Total inventory sync, specific inventory hubs do not.",
+      "type": "short",
+      "key_points": ["total inventory syncs", "hubs do not sync"]
+    },
+    {
+      "col": 154,
+      "section": "QuickBooks",
+      "question": "Does Inventory sync differently if hubs are enabled?",
+      "answer": "No. Updates to item quantities in QBO will not reflect in FP and vice versa. Manage separately.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "manage separately", "changes don't reflect between systems"]
+    },
+    {
+      "col": 155,
+      "section": "QuickBooks",
+      "question": "Common reason why Invoice would not sync?",
+      "answer": "Customer is archived or not synced, line item archived or not synced, notes exceeding 4000 characters, estimates/invoices in closed accounting period.",
+      "type": "long",
+      "key_points": ["customer archived/not synced", "line item archived/not synced", "notes over 4000 chars", "closed accounting period"]
+    },
+    {
+      "col": 156,
+      "section": "QuickBooks",
+      "question": "What data cannot sync from QB Desktop?",
+      "answer": "Customer names >31 chars, special non-ASCII characters, line item names >31 chars, sales receipts, shipping fees, payments on estimates, additional payment methods beyond cash/check/credits/card/ACH, subclasses.",
+      "type": "long",
+      "key_points": ["31 char limit", "special characters", "sales receipts", "shipping fees", "payments on estimates", "subclasses"]
+    },
+    {
+      "col": 157,
+      "section": "QuickBooks",
+      "question": "What data cannot sync from QB Online?",
+      "answer": "Customers: additional contacts/locations/custom fields/tags/files. Line Items: tags/UPC barcode/links/suppliers. Invoicing: grouping/custom fields/contracts/deposit field/shipping fees/surcharges. Payments: journal entries/refunds/voiding payments/custom payment types. Others: QB receipts/grouping/FP Projects or Jobs.",
+      "type": "long",
+      "key_points": ["additional contacts/locations", "custom fields", "tags", "UPC barcode", "grouping", "contracts", "shipping fees", "journal entries", "refunds"]
+    },
+    {
+      "col": 158,
+      "section": "QuickBooks",
+      "question": "When does a Customer record sync to QB?",
+      "answer": "Customers are the first to sync once initiated. Helps track how customers were brought in.",
+      "type": "short",
+      "key_points": ["first to sync", "helps track customer acquisition"]
+    },
+    {
+      "col": 159,
+      "section": "QuickBooks",
+      "question": "How to keep track of supplier contacts without syncing to QB?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 160,
+      "section": "Data Migration",
+      "question": "What can FieldPulse migrate?",
+      "answer": "Customers, Additional Locations, Additional Contacts, Jobs, Estimates, Invoices, Assets, Maintenance Agreements.",
+      "type": "list",
+      "key_points": ["Customers", "Additional Locations", "Additional Contacts", "Jobs", "Estimates", "Invoices", "Assets", "Maintenance Agreements"]
+    },
+    {
+      "col": 161,
+      "section": "Data Migration",
+      "question": "Is a QB sync the same as a data migration?",
+      "answer": "No. QB sync is a data transfer with basic customer details, estimates, invoices, items, and payments. Data migration is a paid service that moves more detailed records.",
+      "type": "short",
+      "key_points": ["No", "sync = basic data transfer", "migration = paid service with more detail"]
+    },
+    {
+      "col": 162,
+      "section": "Data Migration",
+      "question": "What info is generally needed for a data migration?",
+      "answer": "Access to prospect's current FSM or client to provide exports of desired data.",
+      "type": "short",
+      "key_points": ["access to current FSM", "data exports"]
+    },
+    {
+      "col": 163,
+      "section": "Data Migration",
+      "question": "Are photos and files generally included in a data migration?",
+      "answer": "No. In most cases, FSMs cannot provide the needed data to import photos.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No"]
+    },
+    {
+      "col": 164,
+      "section": "Data Migration",
+      "question": "Can FP migrate MA records and credit cards on file?",
+      "answer": "Yes to Maintenance Agreements. Yes to cards on file if details can be provided by prospect (requires old merchant to provide tokens).",
+      "type": "short",
+      "key_points": ["Yes to MA", "Yes to cards if tokens provided by old merchant"]
+    },
+    {
+      "col": 165,
+      "section": "Data Migration",
+      "question": "Does FieldPulse have an Open API?",
+      "answer": "Yes.",
+      "type": "yes_no",
+      "correct_answer": "yes",
+      "key_points": ["Yes"]
+    },
+    {
+      "col": 166,
+      "section": "Data Migration",
+      "question": "What is the point of using our API?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 167,
+      "section": "Data Migration",
+      "question": "Does tech support/product team help with API?",
+      "answer": "No. Prospects/customers need someone on their team that understands this.",
+      "type": "yes_no",
+      "correct_answer": "no",
+      "key_points": ["No", "customer needs own developer"]
+    },
+    {
+      "col": 168,
+      "section": "Onboarding vs. Implementation",
+      "question": "Who qualifies for onboarding?",
+      "answer": "Companies with 3-9 FULL users (not including Limited Agent users).",
+      "type": "short",
+      "key_points": ["3-9 full users", "excludes Limited Agent"]
+    },
+    {
+      "col": 169,
+      "section": "Onboarding vs. Implementation",
+      "question": "Who qualifies for implementation?",
+      "answer": "Companies with 10+ FULL users (not including Limited Agent users).",
+      "type": "short",
+      "key_points": ["10+ full users", "excludes Limited Agent"]
+    },
+    {
+      "col": 170,
+      "section": "Standard Support vs. Premium Support",
+      "question": "What resources under Standard Support?",
+      "answer": "Help Center and access to Chat/Email/Phone support team.",
+      "type": "short",
+      "key_points": ["Help Center", "Chat", "Email", "Phone support"]
+    },
+    {
+      "col": 171,
+      "section": "Standard Support vs. Premium Support",
+      "question": "Support Team hours?",
+      "answer": "US: Monday-Friday 7AM-6PM CST. AUS: Monday-Friday 8AM-5PM AEST.",
+      "type": "short",
+      "key_points": ["US: 7AM-6PM CST Mon-Fri", "AUS: 8AM-5PM AEST Mon-Fri"]
+    },
+    {
+      "col": 172,
+      "section": "Standard Support vs. Premium Support",
+      "question": "Price of Premium Support?",
+      "answer": "Depends on account size. $795 to $5000.",
+      "type": "short",
+      "key_points": ["$795 to $5000", "depends on size"]
+    },
+    {
+      "col": 173,
+      "section": "Standard Support vs. Premium Support",
+      "question": "When does Premium Support begin post-sale?",
+      "answer": "After onboarding/implementation is complete.",
+      "type": "short",
+      "key_points": ["after onboarding/implementation complete"]
+    },
+    {
+      "col": 174,
+      "section": "Value Props & Pricing",
+      "question": "Value props of Custom Forms?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 175,
+      "section": "Value Props & Pricing",
+      "question": "Price of Custom Forms?",
+      "answer": "Pre-Sale: $100/month | Post Sale: $200/month",
+      "type": "short",
+      "key_points": ["Pre-Sale $100/month", "Post Sale $200/month"]
+    },
+    {
+      "col": 176,
+      "section": "Value Props & Pricing",
+      "question": "What is our Sales Suite?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 177,
+      "section": "Value Props & Pricing",
+      "question": "Price of Sales Suite?",
+      "answer": "Pre-Sale: $100/month | Post Sale: $200/month",
+      "type": "short",
+      "key_points": ["Pre-Sale $100/month", "Post Sale $200/month"]
+    },
+    {
+      "col": 178,
+      "section": "Value Props & Pricing",
+      "question": "Can Sales Suite components be purchased separately?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 179,
+      "section": "Value Props & Pricing",
+      "question": "Value props of Fleet Tracking?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 180,
+      "section": "Value Props & Pricing",
+      "question": "Price of Fleet Tracking GPS Trackers?",
+      "answer": "$30 per month per device",
+      "type": "short",
+      "key_points": ["$30/month/device"]
+    },
+    {
+      "col": 181,
+      "section": "Value Props & Pricing",
+      "question": "Price of small Asset Trackers?",
+      "answer": "$30 per month per device",
+      "type": "short",
+      "key_points": ["$30/month/device"]
+    },
+    {
+      "col": 182,
+      "section": "Value Props & Pricing",
+      "question": "Price of large Asset Trackers?",
+      "answer": "$30 per month per device",
+      "type": "short",
+      "key_points": ["$30/month/device"]
+    },
+    {
+      "col": 183,
+      "section": "Value Props & Pricing",
+      "question": "Price of Fleet Tracking cameras?",
+      "answer": "$60 per month per camera",
+      "type": "short",
+      "key_points": ["$60/month/camera"]
+    },
+    {
+      "col": 184,
+      "section": "Value Props & Pricing",
+      "question": "Value props of Engage?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 185,
+      "section": "Value Props & Pricing",
+      "question": "Price of Engage?",
+      "answer": "Pre-Sale: $125/month (5 lines and 5 users, $25/extra user and $5/extra line) | Post-Sale: $250/month",
+      "type": "short",
+      "key_points": ["Pre-Sale $125/month", "5 lines 5 users", "$25/extra user", "$5/extra line", "Post-Sale $250/month"]
+    },
+    {
+      "col": 186,
+      "section": "Value Props & Pricing",
+      "question": "Price of additional phone lines in Engage?",
+      "answer": "$5 per line",
+      "type": "short",
+      "key_points": ["$5/line"]
+    },
+    {
+      "col": 187,
+      "section": "Value Props & Pricing",
+      "question": "Value props of Operator AI?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 188,
+      "section": "Value Props & Pricing",
+      "question": "Price of Operator AI?",
+      "answer": "$3/min (starting at $90/month for 30 minutes)",
+      "type": "short",
+      "key_points": ["$3/min", "$90/month", "30 minutes"]
+    },
+    {
+      "col": 189,
+      "section": "Value Props & Pricing",
+      "question": "Value props of Chat AI?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 190,
+      "section": "Value Props & Pricing",
+      "question": "Price of Chat AI?",
+      "answer": "$200 per month",
+      "type": "short",
+      "key_points": ["$200/month"]
+    },
+    {
+      "col": 191,
+      "section": "Value Props & Pricing",
+      "question": "Price of Data Migration services?",
+      "answer": "$2,500",
+      "type": "short",
+      "key_points": ["$2500"]
+    },
+    {
+      "col": 192,
+      "section": "Value Props & Pricing",
+      "question": "Maximum discount without manager approval?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 193,
+      "section": "Value Props & Pricing",
+      "question": "When need Director approval?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 194,
+      "section": "Value Props & Pricing",
+      "question": "When need CRO approval?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 195,
+      "section": "Value Props & Pricing",
+      "question": "Difference between Essentials, Professional, and Enterprise pricing?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 196,
+      "section": "General",
+      "question": "What reminders and notifications can we provide?",
+      "answer": "NO_ANSWER",
+      "type": "no_answer",
+      "key_points": []
+    },
+    {
+      "col": 197,
+      "section": "Score",
+      "question": "Score",
+      "answer": "IGNORE",
+      "type": "ignore",
+      "key_points": []
+    },
+    {
+      "col": 198,
+      "section": "Data Migration",
+      "question": "Where can the link for our API documentation be found?",
+      "answer": "Help Center > FieldPulse API article > link embedded in the blue call out section.",
+      "type": "short",
+      "key_points": ["Help Center", "FieldPulse API article", "blue call out section"]
+    }
+  ]
+}
