@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { getDocContext } from '@/lib/mintlify'
+// import { getDocContext } from '@/lib/mintlify' // Disabled — CORS issue, re-enable with Edge Function
 import type { Question, AIGradeResult } from '@/lib/types'
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -131,14 +131,49 @@ async function callOpenRouter(
   // Parse the JSON from the AI response
   let parsed: AIGradeResult
   try {
-    // The model might wrap JSON in markdown code blocks
     const cleaned = content
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
       .trim()
     parsed = JSON.parse(cleaned)
   } catch {
-    throw new Error(`Failed to parse AI response as JSON: ${content.substring(0, 200)}`)
+    // Retry once — AI occasionally returns prose instead of JSON
+    console.warn('JSON parse failed, retrying OpenRouter call...')
+    const retryResponse = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        response_format: { type: 'json_object' },
+      }),
+    })
+
+    if (!retryResponse.ok) {
+      throw new Error(`OpenRouter retry failed with status ${retryResponse.status}`)
+    }
+
+    const retryData = await retryResponse.json()
+    const retryContent = retryData?.choices?.[0]?.message?.content
+    if (!retryContent) {
+      throw new Error('OpenRouter retry returned empty response')
+    }
+
+    try {
+      const retryCleaned = retryContent
+        .replace(/```json\s*/g, '')
+        .replace(/```\s*/g, '')
+        .trim()
+      parsed = JSON.parse(retryCleaned)
+    } catch {
+      throw new Error(`Failed to parse AI response after retry: ${retryContent.substring(0, 200)}`)
+    }
   }
 
   // Validate
@@ -308,16 +343,9 @@ export async function gradeResponse(
   const config = await getGradingConfig()
   const model = modelOverride || config.model
 
-  // Get doc context (skip for yes/no questions)
-  let docContext = ''
-  if (question.question_type !== 'yes_no') {
-    docContext = await getDocContext(
-      question.id,
-      question.question_text,
-      question.doc_context,
-      question.doc_context_fetched_at
-    )
-  }
+  // Doc context disabled — Mintlify API fails with CORS from the browser.
+  // Re-enable once moved to a Supabase Edge Function.
+  const docContext = ''
 
   // Build prompt
   const prompt = buildGradingPrompt(question, resp.raw_response, docContext || undefined)
@@ -352,12 +380,27 @@ export async function gradeResponse(
     }
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Unknown grading error'
+    console.error(`Grading error for response ${responseId}:`, errorMsg)
+
+    // Write error to DB so it's visible in the UI instead of silently staying pending
+    await supabase
+      .from('responses')
+      .update({
+        grade: 'clarify',
+        confidence: 0,
+        ai_reasoning: `[Grading error — needs manual review] ${errorMsg}`,
+        graded_at: new Date().toISOString(),
+        model_used: 'system',
+        needs_rescore: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', responseId)
 
     return {
       responseId,
-      grade: 'pending',
+      grade: 'clarify',
       confidence: 0,
-      reasoning: '',
+      reasoning: `[Grading error] ${errorMsg}`,
       skipped: false,
       error: errorMsg,
     }
