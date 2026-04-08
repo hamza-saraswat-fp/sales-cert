@@ -546,13 +546,9 @@ export default function RoundDetail() {
                         </TableCell>
                         <TableCell className="text-right">
                           <span className="font-bold text-sm">
-                            {s.pending > 0 ? (
-                              <span className="text-muted-foreground font-normal">
-                                pending
-                              </span>
-                            ) : (
-                              `${s.scorePercent}%`
-                            )}
+                            {s.totalScored > 0
+                              ? `${s.scorePercent}%`
+                              : '–'}
                           </span>
                         </TableCell>
                         <TableCell>

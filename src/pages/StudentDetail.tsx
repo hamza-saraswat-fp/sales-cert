@@ -641,10 +641,10 @@ export default function StudentDetail() {
         <Card className="col-span-1 row-span-1">
           <CardContent className="pt-5 pb-5 flex flex-col items-center justify-center h-full">
             <p className="text-4xl font-bold">
-              {scores.pending > 0 ? '–' : `${scores.scorePercent}%`}
+              {scores.totalScored > 0 ? `${scores.scorePercent}%` : '–'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {scores.pending > 0 ? 'Grading incomplete' : 'Overall Score'}
+              {scores.pending > 0 ? `Score (${scores.pending} pending)` : 'Overall Score'}
             </p>
           </CardContent>
         </Card>
