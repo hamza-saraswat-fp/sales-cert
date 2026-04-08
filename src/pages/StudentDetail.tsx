@@ -11,6 +11,14 @@ import {
   AccordionContent,
 } from '@/components/ui/accordion'
 import { Alert } from '@/components/ui/alert'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 import { GradeBadge, TypeBadge } from '@/components/GradeBadge'
 import {
   ArrowLeft,
@@ -476,9 +484,28 @@ export default function StudentDetail() {
     )
   }
 
-  // ── Add to answer set handler ─────────────────────────────────────────
+  // ── Add to answer set ──────────────────────────────────────────────────
 
-  const handleAddToSet = async (item: QuestionWithResponse) => {
+  const [answerSetDialog, setAnswerSetDialog] = useState<{
+    open: boolean
+    item: QuestionWithResponse | null
+    reason: string
+  }>({ open: false, item: null, reason: '' })
+
+  const handleAddToSet = (item: QuestionWithResponse) => {
+    const effectiveGrade = item.response.adminOverrideGrade || item.response.grade
+    const isGood = effectiveGrade === 'correct'
+    setAnswerSetDialog({
+      open: true,
+      item,
+      reason: isGood ? 'Marked correct by admin review.' : 'Marked incorrect by admin review.',
+    })
+  }
+
+  const confirmAddToSet = async () => {
+    const { item, reason } = answerSetDialog
+    if (!item) return
+
     const effectiveGrade = item.response.adminOverrideGrade || item.response.grade
     const isGood = effectiveGrade === 'correct'
     const field = isGood ? 'few_shot_good' : 'few_shot_bad'
@@ -486,6 +513,7 @@ export default function StudentDetail() {
 
     if (IS_DEMO) {
       toast.success(`Added to ${isGood ? 'good' : 'bad'} examples (demo mode)`)
+      setAnswerSetDialog({ open: false, item: null, reason: '' })
       return
     }
 
@@ -504,17 +532,9 @@ export default function StudentDetail() {
     const questionData = question as { few_shot_good: Array<{ response: string; explanation: string }>; few_shot_bad: Array<{ response: string; explanation: string }> }
     const currentExamples = questionData[field] || []
 
-    // Check if this response is already in the set
-    if (currentExamples.some((ex) => ex.response === rawResponse)) {
-      toast.info('This response is already in the answer set')
-      return
-    }
-
     const newExample = {
       response: rawResponse.substring(0, 500),
-      explanation: isGood
-        ? 'Marked correct by admin review.'
-        : 'Marked incorrect by admin review.',
+      explanation: reason.trim() || (isGood ? 'Marked correct by admin review.' : 'Marked incorrect by admin review.'),
     }
 
     const updatedExamples = [...currentExamples, newExample]
@@ -546,6 +566,7 @@ export default function StudentDetail() {
     toast.success(
       `Added to ${isGood ? 'good' : 'bad'} examples. Other responses flagged for rescore.`
     )
+    setAnswerSetDialog({ open: false, item: null, reason: '' })
   }
 
   // ── Derived data ───────────────────────────────────────────────────────────
@@ -812,6 +833,62 @@ export default function StudentDetail() {
           </CardHeader>
         </Card>
       )}
+
+      {/* Add to Answer Set Dialog */}
+      <Dialog
+        open={answerSetDialog.open}
+        onOpenChange={(open) => {
+          if (!open) setAnswerSetDialog({ open: false, item: null, reason: '' })
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Add to {answerSetDialog.item && (answerSetDialog.item.response.adminOverrideGrade || answerSetDialog.item.response.grade) === 'correct' ? 'Good' : 'Bad'} Examples
+            </DialogTitle>
+            <DialogDescription>
+              This answer will be used as a {answerSetDialog.item && (answerSetDialog.item.response.adminOverrideGrade || answerSetDialog.item.response.grade) === 'correct' ? 'good' : 'bad'} example when grading other students on this question.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                Student Response
+              </p>
+              <div className="text-sm bg-muted/50 rounded-md p-2 max-h-24 overflow-y-auto">
+                {answerSetDialog.item?.response.rawResponse || 'No response'}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                Why is this a {answerSetDialog.item && (answerSetDialog.item.response.adminOverrideGrade || answerSetDialog.item.response.grade) === 'correct' ? 'good' : 'bad'} answer? (optional)
+              </p>
+              <Textarea
+                value={answerSetDialog.reason}
+                onChange={(e) =>
+                  setAnswerSetDialog((prev) => ({ ...prev, reason: e.target.value }))
+                }
+                placeholder="e.g., Covers all key points clearly..."
+                rows={2}
+                className="text-sm"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAnswerSetDialog({ open: false, item: null, reason: '' })}
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={confirmAddToSet}>
+                <BookmarkPlus className="size-3.5" />
+                Add to Set
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
