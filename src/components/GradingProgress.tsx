@@ -1,15 +1,10 @@
 import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Loader2,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
-  SkipForward,
   Ban,
-  CircleAlert,
 } from 'lucide-react'
 import type { BatchGradeProgress } from '@/lib/grading'
 
@@ -61,50 +56,17 @@ export function GradingProgress({
         {/* Progress bar */}
         <Progress value={percent} className="mb-3" />
 
-        {/* Stats */}
-        <div className="flex flex-wrap gap-2">
-          <Badge
-            variant="outline"
-            className="bg-green-50 text-green-700 border-green-200"
-          >
-            <CheckCircle className="size-3" />
-            {progress.correct} correct
-          </Badge>
-          <Badge
-            variant="outline"
-            className="bg-red-50 text-red-700 border-red-200"
-          >
-            <XCircle className="size-3" />
-            {progress.incorrect} incorrect
-          </Badge>
-          <Badge
-            variant="outline"
-            className="bg-yellow-50 text-yellow-700 border-yellow-200"
-          >
-            <AlertTriangle className="size-3" />
-            {progress.clarify} clarify
-          </Badge>
-          {progress.skipped > 0 && (
-            <Badge variant="outline" className="bg-slate-50 text-slate-500">
-              <SkipForward className="size-3" />
-              {progress.skipped} skipped
-            </Badge>
-          )}
-          {progress.errors > 0 && (
-            <Badge
-              variant="outline"
-              className="bg-red-50 text-red-700 border-red-200"
-            >
-              <CircleAlert className="size-3" />
-              {progress.errors} errors
-            </Badge>
-          )}
-        </div>
-
         {/* Current question */}
         {isGrading && progress.currentQuestion && (
           <p className="text-xs text-muted-foreground mt-2 truncate">
             Grading: {progress.currentQuestion}
+          </p>
+        )}
+
+        {/* Resilience note */}
+        {isGrading && (
+          <p className="text-xs text-muted-foreground mt-1">
+            If you close this tab, grading will pick up where it left off when you come back.
           </p>
         )}
       </CardContent>

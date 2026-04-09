@@ -442,6 +442,7 @@ export async function batchGrade(options: BatchGradeOptions): Promise<BatchGrade
       .from('submissions')
       .select('id')
       .eq('round_id', roundId)
+      .limit(10000)
 
     if (subErr) {
       console.error('Failed to fetch submissions:', subErr)
@@ -461,6 +462,7 @@ export async function batchGrade(options: BatchGradeOptions): Promise<BatchGrade
     .select('id, question_id, questions(question_text)')
     .in('submission_id', subIds)
     .or('grade.eq.pending,needs_rescore.eq.true')
+    .limit(10000)
 
   if (questionId) {
     query = query.eq('question_id', questionId)

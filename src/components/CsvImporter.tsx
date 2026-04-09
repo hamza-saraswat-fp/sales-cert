@@ -219,7 +219,7 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
             .from('responses')
             .upsert(batch, {
               onConflict: 'submission_id,question_id',
-              ignoreDuplicates: false,
+              ignoreDuplicates: true,
             })
 
           if (respErr) throw new Error(`Failed to create responses for ${row.email}: ${respErr.message}`)
