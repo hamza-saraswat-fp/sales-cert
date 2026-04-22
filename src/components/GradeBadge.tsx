@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 
-type GradeBadgeVariant = 'correct' | 'incorrect' | 'clarify' | 'pending' | 'skipped'
+type GradeBadgeVariant = 'correct' | 'incorrect' | 'partial' | 'clarify' | 'pending' | 'skipped'
 
 const variantMap: Record<GradeBadgeVariant, { label: string; className: string }> = {
   correct: {
@@ -10,6 +10,10 @@ const variantMap: Record<GradeBadgeVariant, { label: string; className: string }
   incorrect: {
     label: 'Incorrect',
     className: 'bg-red-100 text-red-800 border-red-200',
+  },
+  partial: {
+    label: 'Half',
+    className: 'bg-amber-100 text-amber-800 border-amber-200',
   },
   clarify: {
     label: 'Clarify',

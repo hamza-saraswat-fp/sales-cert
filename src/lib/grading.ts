@@ -5,11 +5,15 @@ import type { Question, AIGradeResult } from '@/lib/types'
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const RATE_LIMIT_DELAY_MS = 150
 
-// ── System prompt (exact from spec) ──────────────────────────────────────────
+// Max concurrent OpenRouter requests during batch grading. Haiku + OpenRouter
+// comfortably handles 16; bump higher only after measuring rate-limit errors.
+const BATCH_CONCURRENCY = 16
 
-const SYSTEM_PROMPT = `You are a grading assistant for FieldPulse's sales certification quiz. Your job is to evaluate a sales team member's response to a quiz question by comparing it against the official answer key.
+
+// ── System prompts ───────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT_BASE = `You are a grading assistant for FieldPulse's sales certification quiz. Your job is to evaluate a sales team member's response to a quiz question by comparing it against the official answer key.
 
 GRADING CRITERIA:
 - Focus on whether the student demonstrates understanding of the correct concepts
@@ -22,13 +26,30 @@ GRADING CRITERIA:
 CONFIDENCE SCORING:
 - 85-100: High confidence – you are very sure of your grade
 - 60-84: Medium confidence – the answer is borderline or you're uncertain
-- 0-59: Low confidence – significant ambiguity, needs human review
+- 0-59: Low confidence – significant ambiguity, needs human review`
+
+const SYSTEM_PROMPT = `${SYSTEM_PROMPT_BASE}
 
 OUTPUT FORMAT (respond with ONLY this JSON, no other text):
 {
   "grade": "correct" | "incorrect" | "clarify",
   "confidence": <number 0-100>,
   "reasoning": "<brief explanation of why you graded this way, noting what the student got right and what they missed>"
+}`
+
+const SYSTEM_PROMPT_PARTIAL = `${SYSTEM_PROMPT_BASE}
+
+PARTIAL CREDIT:
+- This question has multiple parts. If the student answers some parts correctly but misses or gets others wrong, respond with grade: "partial" and explain which parts are right and which are wrong.
+- Only use "correct" if the student got all parts right.
+- Only use "incorrect" if the student got all parts wrong or missed them entirely.
+- Use "clarify" if the response is ambiguous and you cannot tell.
+
+OUTPUT FORMAT (respond with ONLY this JSON, no other text):
+{
+  "grade": "correct" | "incorrect" | "partial" | "clarify",
+  "confidence": <number 0-100>,
+  "reasoning": "<brief explanation: which parts the student got right and which they missed>"
 }`
 
 // ── Prompt builder ───────────────────────────────────────────────────────────
@@ -43,6 +64,7 @@ export function buildGradingPrompt(
   rawResponse: string,
   docContext?: string
 ): PromptParts {
+  const system = question.allow_partial_credit ? SYSTEM_PROMPT_PARTIAL : SYSTEM_PROMPT
   const parts: string[] = []
 
   // Question
@@ -85,7 +107,7 @@ export function buildGradingPrompt(
   parts.push('\nGrade this response.')
 
   return {
-    system: SYSTEM_PROMPT,
+    system,
     user: parts.join('\n'),
   }
 }
@@ -177,7 +199,7 @@ async function callOpenRouter(
   }
 
   // Validate
-  if (!['correct', 'incorrect', 'clarify'].includes(parsed.grade)) {
+  if (!['correct', 'incorrect', 'clarify', 'partial'].includes(parsed.grade)) {
     throw new Error(`Invalid grade value from AI: "${parsed.grade}"`)
   }
   if (typeof parsed.confidence !== 'number' || parsed.confidence < 0 || parsed.confidence > 100) {
@@ -224,10 +246,12 @@ function applyThresholds(
 
 // ── Get grading config from Supabase ─────────────────────────────────────────
 
-async function getGradingConfig(): Promise<{
+interface ResolvedGradingConfig {
   model: string
   thresholds: ThresholdConfig
-}> {
+}
+
+async function getGradingConfig(): Promise<ResolvedGradingConfig> {
   const { data: configRows } = await supabase
     .from('grading_config')
     .select('key, value')
@@ -261,6 +285,15 @@ export interface GradeResponseResult {
 
 export async function gradeResponse(
   responseId: string,
+  modelOverride?: string
+): Promise<GradeResponseResult> {
+  const config = await getGradingConfig()
+  return gradeResponseWithConfig(responseId, config, modelOverride)
+}
+
+async function gradeResponseWithConfig(
+  responseId: string,
+  config: ResolvedGradingConfig,
   modelOverride?: string
 ): Promise<GradeResponseResult> {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
@@ -302,6 +335,7 @@ export async function gradeResponse(
       .update({
         grade: 'skipped',
         graded_at: new Date().toISOString(),
+        needs_rescore: false,
         updated_at: new Date().toISOString(),
       })
       .eq('id', responseId)
@@ -339,8 +373,6 @@ export async function gradeResponse(
     }
   }
 
-  // Get config
-  const config = await getGradingConfig()
   const model = modelOverride || config.model
 
   // Doc context disabled — Mintlify API fails with CORS from the browser.
@@ -414,15 +446,18 @@ export interface BatchGradeProgress {
   completed: number
   correct: number
   incorrect: number
+  partial: number
   clarify: number
   skipped: number
   errors: number
   currentQuestion: string
+  startedAt: number
 }
 
 export interface BatchGradeOptions {
   roundId: string
   submissionId?: string
+  submissionIds?: string[]
   questionId?: string
   modelOverride?: string
   onProgress?: (progress: BatchGradeProgress) => void
@@ -430,39 +465,26 @@ export interface BatchGradeOptions {
 }
 
 export async function batchGrade(options: BatchGradeOptions): Promise<BatchGradeProgress> {
-  const { roundId, submissionId, questionId, modelOverride, onProgress, signal } = options
+  const { roundId, submissionId, submissionIds, questionId, modelOverride, onProgress, signal } = options
 
-  // Step 1: Get submission IDs for this round (avoids complex inner join filters)
-  let subIds: string[] = []
+  // Fetch grading config ONCE for the whole batch instead of per-response.
+  const config = await getGradingConfig()
 
-  if (submissionId) {
-    subIds = [submissionId]
-  } else {
-    const { data: subs, error: subErr } = await supabase
-      .from('submissions')
-      .select('id')
-      .eq('round_id', roundId)
-      .limit(10000)
-
-    if (subErr) {
-      console.error('Failed to fetch submissions:', subErr)
-      throw new Error(`Failed to fetch submissions: ${subErr.message}`)
-    }
-    subIds = (subs || []).map((s) => s.id)
-  }
-
-  if (subIds.length === 0) {
-    console.warn('No submissions found for round', roundId)
-    return { total: 0, completed: 0, correct: 0, incorrect: 0, clarify: 0, skipped: 0, errors: 0, currentQuestion: '' }
-  }
-
-  // Step 2: Get pending/rescore responses for those submissions
+  // Single query: join through submissions to filter by round + current attempt,
+  // only fetching pending/rescore rows.
   let query = supabase
     .from('responses')
-    .select('id, question_id, questions(question_text)')
-    .in('submission_id', subIds)
+    .select('id, question_id, questions(question_text), submissions!inner(round_id, is_current)')
+    .eq('submissions.round_id', roundId)
+    .eq('submissions.is_current', true)
     .or('grade.eq.pending,needs_rescore.eq.true')
-    .limit(10000)
+    .limit(50000)
+
+  if (submissionId) {
+    query = query.eq('submission_id', submissionId)
+  } else if (submissionIds && submissionIds.length > 0) {
+    query = query.in('submission_id', submissionIds)
+  }
 
   if (questionId) {
     query = query.eq('question_id', questionId)
@@ -475,7 +497,9 @@ export async function batchGrade(options: BatchGradeOptions): Promise<BatchGrade
     throw new Error(`Failed to fetch responses to grade: ${fetchErr.message}`)
   }
 
-  console.log(`batchGrade: found ${responses?.length ?? 0} responses to grade for ${subIds.length} submissions`)
+  console.log(`batchGrade: found ${responses?.length ?? 0} pending/rescore responses to grade`)
+
+  const startedAt = Date.now()
 
   if (!responses || responses.length === 0) {
     return {
@@ -483,10 +507,12 @@ export async function batchGrade(options: BatchGradeOptions): Promise<BatchGrade
       completed: 0,
       correct: 0,
       incorrect: 0,
+      partial: 0,
       clarify: 0,
       skipped: 0,
       errors: 0,
       currentQuestion: '',
+      startedAt,
     }
   }
 
@@ -495,51 +521,62 @@ export async function batchGrade(options: BatchGradeOptions): Promise<BatchGrade
     completed: 0,
     correct: 0,
     incorrect: 0,
+    partial: 0,
     clarify: 0,
     skipped: 0,
     errors: 0,
     currentQuestion: '',
+    startedAt,
   }
 
-  for (const resp of responses) {
-    // Check for cancellation
+  for (let i = 0; i < responses.length; i += BATCH_CONCURRENCY) {
     if (signal?.aborted) break
 
+    const batch = responses.slice(i, i + BATCH_CONCURRENCY)
+
+    // Show the first question in this batch as the current question
     const questionText =
-      (resp.questions as unknown as { question_text: string })?.question_text || ''
+      (batch[0].questions as unknown as { question_text: string })?.question_text || ''
     progress.currentQuestion =
-      questionText.length > 60
-        ? questionText.substring(0, 60) + '...'
-        : questionText
+      questionText.length > 60 ? questionText.substring(0, 60) + '...' : questionText
     onProgress?.(structuredClone(progress))
 
-    const result = await gradeResponse(resp.id, modelOverride)
+    const results = await Promise.allSettled(
+      batch.map((r) => gradeResponseWithConfig(r.id, config, modelOverride))
+    )
 
-    progress.completed++
-    if (result.error) {
-      progress.errors++
-    } else if (result.skipped) {
-      progress.skipped++
-    } else {
-      switch (result.grade) {
-        case 'correct':
-          progress.correct++
-          break
-        case 'incorrect':
-          progress.incorrect++
-          break
-        case 'clarify':
-          progress.clarify++
-          break
+    // Tally results
+    for (const settled of results) {
+      progress.completed++
+      if (settled.status === 'rejected') {
+        console.error('Grading promise rejected:', settled.reason)
+        progress.errors++
+        continue
+      }
+      const result = settled.value
+      if (result.error) {
+        progress.errors++
+      } else if (result.skipped) {
+        progress.skipped++
+      } else {
+        switch (result.grade) {
+          case 'correct':
+            progress.correct++
+            break
+          case 'incorrect':
+            progress.incorrect++
+            break
+          case 'partial':
+            progress.partial++
+            break
+          case 'clarify':
+            progress.clarify++
+            break
+        }
       }
     }
 
     onProgress?.(structuredClone(progress))
-
-    // Rate limit delay
-    if (!signal?.aborted) {
-      await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
-    }
   }
 
   return progress

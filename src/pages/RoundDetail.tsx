@@ -42,6 +42,7 @@ import { supabase } from '@/lib/supabase'
 import { batchGrade, type BatchGradeProgress } from '@/lib/grading'
 import { CsvImporter } from '@/components/CsvImporter'
 import { GradingProgress } from '@/components/GradingProgress'
+import { RoundAnalyticsPanel } from '@/components/RoundAnalyticsPanel'
 import { IS_DEMO, demoRound, demoQuestions, getDemoStudentRows, demoModels } from '@/lib/mock-data'
 import { exportGradesCsv } from '@/lib/csv-export'
 import type { Question, QuizRound, ModelOption } from '@/lib/types'
@@ -55,6 +56,7 @@ interface StudentRow {
   submissionId: string
   correct: number
   incorrect: number
+  partial: number
   clarify: number
   pending: number
   skipped: number
@@ -81,12 +83,17 @@ export default function RoundDetail() {
     completed: 0,
     correct: 0,
     incorrect: 0,
+    partial: 0,
     clarify: 0,
     skipped: 0,
     errors: 0,
     currentQuestion: '',
+    startedAt: 0,
   })
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Multi-select state for bulk grading
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   // Model selection state
   const [availableModels, setAvailableModels] = useState<ModelOption[]>([])
@@ -152,44 +159,51 @@ export default function RoundDetail() {
       const defaultModel = (configMap.default_model as string) || 'anthropic/claude-3.5-haiku'
       if (!selectedModel) setSelectedModel(defaultModel)
 
-      // Fetch submissions with student info + response counts
+      // Fetch current-attempt submissions with student info + response counts
       const { data: submissions, error: subErr } = await supabase
         .from('submissions')
         .select('id, student_id, students(id, email, display_name)')
         .eq('round_id', roundId)
+        .eq('is_current', true)
 
       if (subErr) throw subErr
 
-      // For each submission, fetch grade counts
+      // Fetch ALL responses for this round in one query
+      const subIds = (submissions || []).map((s) => s.id)
+      const { data: allResponses } = subIds.length > 0
+        ? await supabase
+            .from('responses')
+            .select('submission_id, grade, admin_override_grade')
+            .in('submission_id', subIds)
+            .limit(50000)
+        : { data: [] as { submission_id: string; grade: string; admin_override_grade: string | null }[] }
+
+      // Group by submission_id
+      const responsesBySubmission = (allResponses || []).reduce<
+        Record<string, { grade: string; admin_override_grade: string | null }[]>
+      >((acc, r) => {
+        ;(acc[r.submission_id] ||= []).push(r)
+        return acc
+      }, {})
+
+      // Build student rows from grouped data
       const studentRows: StudentRow[] = []
       for (const sub of submissions || []) {
         const student = (sub as unknown as { students: { id: string; email: string; display_name: string } }).students
+        const responses = responsesBySubmission[sub.id] || []
 
-        const { data: responses } = await supabase
-          .from('responses')
-          .select('grade, admin_override_grade')
-          .eq('submission_id', sub.id)
-
-        const counts = {
-          correct: 0,
-          incorrect: 0,
-          clarify: 0,
-          pending: 0,
-          skipped: 0,
-        }
-
-        for (const r of responses || []) {
+        const counts = { correct: 0, incorrect: 0, partial: 0, clarify: 0, pending: 0, skipped: 0 }
+        for (const r of responses) {
           const effectiveGrade = r.admin_override_grade || r.grade
           if (effectiveGrade in counts) {
             counts[effectiveGrade as keyof typeof counts]++
           }
         }
 
-        const totalScored = counts.correct + counts.incorrect + counts.clarify + counts.pending
+        const totalScored = counts.correct + counts.incorrect + counts.partial + counts.clarify + counts.pending
+        const points = counts.correct + 0.5 * counts.partial
         const scorePercent =
-          totalScored > 0
-            ? Math.round((counts.correct / totalScored) * 100)
-            : 0
+          totalScored > 0 ? Math.round((points / totalScored) * 100) : 0
 
         studentRows.push({
           studentId: student.id,
@@ -217,12 +231,23 @@ export default function RoundDetail() {
 
   // ── Grading handlers ───────────────────────────────────────────────────────
 
-  const handleGrade = async (submissionId?: string) => {
+  const handleGrade = async (target?: { submissionId?: string; submissionIds?: string[] }) => {
     if (!roundId || isGrading) return
 
-    const pendingCount = submissionId
-      ? students.find((s) => s.submissionId === submissionId)?.pending ?? 0
-      : students.reduce((sum, s) => sum + s.pending, 0)
+    const { submissionId, submissionIds } = target || {}
+
+    let pendingCount: number
+    if (submissionId) {
+      pendingCount = students.find((s) => s.submissionId === submissionId)?.pending ?? 0
+    } else if (submissionIds && submissionIds.length > 0) {
+      const set = new Set(submissionIds)
+      pendingCount = students.reduce(
+        (sum, s) => sum + (set.has(s.submissionId) ? s.pending : 0),
+        0
+      )
+    } else {
+      pendingCount = students.reduce((sum, s) => sum + s.pending, 0)
+    }
 
     if (pendingCount === 0) {
       toast.info('Nothing to grade', {
@@ -237,10 +262,12 @@ export default function RoundDetail() {
       completed: 0,
       correct: 0,
       incorrect: 0,
+      partial: 0,
       clarify: 0,
       skipped: 0,
       errors: 0,
       currentQuestion: '',
+      startedAt: Date.now(),
     })
 
     const controller = new AbortController()
@@ -250,6 +277,7 @@ export default function RoundDetail() {
       const result = await batchGrade({
         roundId,
         submissionId,
+        submissionIds,
         modelOverride: selectedModel || undefined,
         onProgress: setGradingProgress,
         signal: controller.signal,
@@ -260,13 +288,21 @@ export default function RoundDetail() {
           description: `Graded ${result.completed} of ${result.total} responses before cancellation.`,
         })
       } else {
-        toast.success('Grading complete!', {
-          description: `${result.correct} correct, ${result.incorrect} incorrect, ${result.clarify} clarify, ${result.errors} errors.`,
-        })
+        const parts: string[] = [`${result.correct} correct`, `${result.incorrect} incorrect`]
+        if (result.partial > 0) parts.push(`${result.partial} partial`)
+        parts.push(`${result.clarify} clarify`, `${result.errors} errors`)
+        toast.success('Grading complete!', { description: parts.join(', ') })
       }
 
-      // Refresh data to show updated scores
-      await fetchData()
+      // Refresh response counts only for affected submissions — faster than full refetch.
+      await refreshStudentRowsForSubmissions(
+        submissionId
+          ? [submissionId]
+          : submissionIds && submissionIds.length > 0
+            ? submissionIds
+            : students.map((s) => s.submissionId)
+      )
+      setSelectedIds(new Set())
     } catch (err) {
       toast.error('Grading failed', {
         description: err instanceof Error ? err.message : 'Unknown error',
@@ -275,6 +311,45 @@ export default function RoundDetail() {
       setIsGrading(false)
       abortControllerRef.current = null
     }
+  }
+
+  // Update only the affected student rows' score counts in-place, avoiding the
+  // full round refetch that refreshed everything (including questions + config).
+  const refreshStudentRowsForSubmissions = async (submissionIds: string[]) => {
+    if (IS_DEMO || submissionIds.length === 0) {
+      await fetchData()
+      return
+    }
+
+    const { data: rows } = await supabase
+      .from('responses')
+      .select('submission_id, grade, admin_override_grade')
+      .in('submission_id', submissionIds)
+      .limit(50000)
+
+    const grouped: Record<string, { grade: string; admin_override_grade: string | null }[]> = {}
+    for (const r of rows || []) {
+      ;(grouped[r.submission_id] ||= []).push(r)
+    }
+
+    setStudents((prev) =>
+      prev
+        .map((row) => {
+          if (!grouped[row.submissionId]) return row
+          const counts = { correct: 0, incorrect: 0, partial: 0, clarify: 0, pending: 0, skipped: 0 }
+          for (const r of grouped[row.submissionId]) {
+            const effectiveGrade = r.admin_override_grade || r.grade
+            if (effectiveGrade in counts) {
+              counts[effectiveGrade as keyof typeof counts]++
+            }
+          }
+          const totalScored = counts.correct + counts.incorrect + counts.partial + counts.clarify + counts.pending
+          const points = counts.correct + 0.5 * counts.partial
+          const scorePercent = totalScored > 0 ? Math.round((points / totalScored) * 100) : 0
+          return { ...row, ...counts, totalScored, scorePercent }
+        })
+        .sort((a, b) => b.scorePercent - a.scorePercent)
+    )
   }
 
   const handleCancelGrading = () => {
@@ -461,6 +536,7 @@ export default function RoundDetail() {
           <TabsTrigger value="students">
             Students ({students.length})
           </TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
         </TabsList>
 
@@ -484,94 +560,179 @@ export default function RoundDetail() {
               </CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-8">#</TableHead>
-                      <TableHead>Student</TableHead>
-                      <TableHead className="text-center w-20">Correct</TableHead>
-                      <TableHead className="text-center w-20">Wrong</TableHead>
-                      <TableHead className="text-center w-20">Clarify</TableHead>
-                      <TableHead className="text-center w-20">Pending</TableHead>
-                      <TableHead className="text-center w-20">Skipped</TableHead>
-                      <TableHead className="text-right w-24">Score</TableHead>
-                      <TableHead className="w-20"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {students.map((s, i) => (
-                      <TableRow key={s.studentId}>
-                        <TableCell className="text-muted-foreground text-xs">
-                          {i + 1}
-                        </TableCell>
-                        <TableCell>
-                          <Link
-                            to={`/rounds/${roundId}/students/${s.studentId}`}
-                            className="hover:underline"
-                          >
-                            <p className="font-medium text-sm">
-                              {s.displayName}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {s.email}
-                            </p>
-                          </Link>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="text-sm font-medium text-green-700">
-                            {s.correct}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="text-sm font-medium text-red-700">
-                            {s.incorrect}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="text-sm font-medium text-yellow-700">
-                            {s.clarify}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="text-sm text-muted-foreground">
-                            {s.pending}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="text-sm text-muted-foreground">
-                            {s.skipped}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className="font-bold text-sm">
-                            {s.totalScored > 0
-                              ? `${s.scorePercent}%`
-                              : '–'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {s.pending > 0 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={isGrading}
-                              onClick={() => handleGrade(s.submissionId)}
-                              className="h-7 px-2 text-xs"
-                            >
-                              <Play className="size-3" />
-                              Grade
-                            </Button>
-                          )}
-                        </TableCell>
+            <>
+              {/* Bulk-grade toolbar */}
+              {students.length > 0 && (
+                <div className="flex items-center justify-between mb-2 text-sm">
+                  <div className="text-muted-foreground">
+                    {selectedIds.size > 0
+                      ? `${selectedIds.size} selected`
+                      : 'Select students to grade a subset, or use Grade All.'}
+                  </div>
+                  <div className="flex gap-2">
+                    {selectedIds.size > 0 && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedIds(new Set())}
+                          disabled={isGrading}
+                        >
+                          Clear
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleGrade({ submissionIds: Array.from(selectedIds) })
+                          }
+                          disabled={isGrading}
+                        >
+                          <Play className="size-3" />
+                          Grade Selected ({selectedIds.size})
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8">
+                          <input
+                            type="checkbox"
+                            aria-label="Select all students"
+                            className="size-4 cursor-pointer"
+                            checked={
+                              students.length > 0 &&
+                              selectedIds.size === students.length
+                            }
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds(new Set(students.map((s) => s.submissionId)))
+                              } else {
+                                setSelectedIds(new Set())
+                              }
+                            }}
+                          />
+                        </TableHead>
+                        <TableHead className="w-8">#</TableHead>
+                        <TableHead>Student</TableHead>
+                        <TableHead className="text-center w-16">✓</TableHead>
+                        <TableHead className="text-center w-16">✗</TableHead>
+                        <TableHead className="text-center w-16">½</TableHead>
+                        <TableHead className="text-center w-16">?</TableHead>
+                        <TableHead className="text-center w-16">Pending</TableHead>
+                        <TableHead className="text-center w-16">Skip</TableHead>
+                        <TableHead className="text-right w-20">Score</TableHead>
+                        <TableHead className="w-20"></TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {students.map((s, i) => (
+                        <TableRow key={s.studentId}>
+                          <TableCell>
+                            <input
+                              type="checkbox"
+                              aria-label={`Select ${s.displayName}`}
+                              className="size-4 cursor-pointer"
+                              checked={selectedIds.has(s.submissionId)}
+                              onChange={(e) => {
+                                setSelectedIds((prev) => {
+                                  const next = new Set(prev)
+                                  if (e.target.checked) next.add(s.submissionId)
+                                  else next.delete(s.submissionId)
+                                  return next
+                                })
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-xs">
+                            {i + 1}
+                          </TableCell>
+                          <TableCell>
+                            <Link
+                              to={`/rounds/${roundId}/students/${s.studentId}`}
+                              className="hover:underline"
+                            >
+                              <p className="font-medium text-sm">
+                                {s.displayName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {s.email}
+                              </p>
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-sm font-medium text-green-700">
+                              {s.correct}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-sm font-medium text-red-700">
+                              {s.incorrect}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {s.partial > 0 ? (
+                              <span className="text-sm font-medium text-amber-700">
+                                {s.partial}
+                              </span>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">0</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-sm font-medium text-yellow-700">
+                              {s.clarify}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-sm text-muted-foreground">
+                              {s.pending}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-sm text-muted-foreground">
+                              {s.skipped}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="font-bold text-sm">
+                              {s.totalScored > 0
+                                ? `${s.scorePercent}%`
+                                : '–'}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            {s.pending > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={isGrading}
+                                onClick={() => handleGrade({ submissionId: s.submissionId })}
+                                className="h-7 px-2 text-xs"
+                              >
+                                <Play className="size-3" />
+                                Grade
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </>
           )}
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4">
+          <RoundAnalyticsPanel roundId={roundId!} />
         </TabsContent>
 
         <TabsContent value="overview" className="mt-4">

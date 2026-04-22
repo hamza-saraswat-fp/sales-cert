@@ -19,7 +19,16 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { GradeBadge, TypeBadge } from '@/components/GradeBadge'
+import { AttemptComparison, type AttemptData } from '@/components/AttemptComparison'
 import {
   ArrowLeft,
   Loader2,
@@ -31,10 +40,12 @@ import {
   ChevronDown,
   ChevronRight,
   BookmarkPlus,
+  Download,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { IS_DEMO, getDemoStudent, demoQuestions } from '@/lib/mock-data'
+import { IS_DEMO, getDemoStudent, demoQuestions, demoRound } from '@/lib/mock-data'
+import { exportStudentGradesCsv } from '@/lib/csv-export'
 import type { Question, Student, GradeValue } from '@/lib/types'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -57,9 +68,17 @@ interface QuestionWithResponse {
   effectiveGrade: string
 }
 
+interface AttemptMeta {
+  id: string
+  attemptNumber: number
+  isCurrent: boolean
+  submittedAt: string | null
+}
+
 interface ScoreSummary {
   correct: number
   incorrect: number
+  partial: number
   clarify: number
   pending: number
   skipped: number
@@ -72,6 +91,7 @@ interface ScoreSummary {
 function calculateScores(items: QuestionWithResponse[]): ScoreSummary {
   let correct = 0
   let incorrect = 0
+  let partial = 0
   let clarify = 0
   let pending = 0
   let skipped = 0
@@ -83,6 +103,9 @@ function calculateScores(items: QuestionWithResponse[]): ScoreSummary {
         break
       case 'incorrect':
         incorrect++
+        break
+      case 'partial':
+        partial++
         break
       case 'clarify':
         clarify++
@@ -96,10 +119,11 @@ function calculateScores(items: QuestionWithResponse[]): ScoreSummary {
     }
   }
 
-  const totalScored = correct + incorrect + clarify + pending
-  const scorePercent = totalScored > 0 ? Math.round((correct / totalScored) * 100) : 0
+  const totalScored = correct + incorrect + partial + clarify + pending
+  const points = correct + 0.5 * partial
+  const scorePercent = totalScored > 0 ? Math.round((points / totalScored) * 100) : 0
 
-  return { correct, incorrect, clarify, pending, skipped, totalScored, scorePercent }
+  return { correct, incorrect, partial, clarify, pending, skipped, totalScored, scorePercent }
 }
 
 // ── Expanded response detail ─────────────────────────────────────────────────
@@ -210,7 +234,7 @@ function OverrideButtons({
   onAddToSet,
 }: {
   item: QuestionWithResponse
-  onOverride: (responseId: string, grade: 'correct' | 'incorrect' | null) => void
+  onOverride: (responseId: string, grade: 'correct' | 'incorrect' | 'partial' | null) => void
   onAddToSet: (item: QuestionWithResponse) => void
 }) {
   const overrideGrade = item.response.adminOverrideGrade
@@ -218,6 +242,7 @@ function OverrideButtons({
   const canAddToSet =
     (effectiveGrade === 'correct' || effectiveGrade === 'incorrect') &&
     item.response.rawResponse
+  const allowPartial = item.question.allow_partial_credit
 
   return (
     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -237,6 +262,24 @@ function OverrideButtons({
       >
         <CheckCircle className="size-3.5" />
       </button>
+      {allowPartial && (
+        <button
+          onClick={() =>
+            onOverride(
+              item.response.id,
+              overrideGrade === 'partial' ? null : 'partial'
+            )
+          }
+          className={`px-1 rounded transition-colors text-[10px] font-semibold leading-none h-[18px] ${
+            overrideGrade === 'partial'
+              ? 'text-amber-700 bg-amber-100'
+              : 'text-muted-foreground/40 hover:text-amber-700 hover:bg-amber-50'
+          }`}
+          title={overrideGrade === 'partial' ? 'Clear override' : 'Mark half credit'}
+        >
+          ½
+        </button>
+      )}
       <button
         onClick={() =>
           onOverride(
@@ -274,7 +317,7 @@ function SectionGroup({
 }: {
   section: string
   items: QuestionWithResponse[]
-  onOverride: (responseId: string, grade: 'correct' | 'incorrect' | null) => void
+  onOverride: (responseId: string, grade: 'correct' | 'incorrect' | 'partial' | null) => void
   onAddToSet: (item: QuestionWithResponse) => void
 }) {
   const [collapsed, setCollapsed] = useState(false)
@@ -297,6 +340,9 @@ function SectionGroup({
         <div className="flex items-center gap-2">
           <span className="text-xs text-green-700">{sectionScores.correct}✓</span>
           <span className="text-xs text-red-700">{sectionScores.incorrect}✗</span>
+          {sectionScores.partial > 0 && (
+            <span className="text-xs text-amber-700">{sectionScores.partial}½</span>
+          )}
           {sectionScores.clarify > 0 && (
             <span className="text-xs text-yellow-700">{sectionScores.clarify}?</span>
           )}
@@ -355,6 +401,11 @@ export default function StudentDetail() {
   const [items, setItems] = useState<QuestionWithResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [submissionId, setSubmissionId] = useState<string | null>(null)
+  const [roundName, setRoundName] = useState<string>('')
+  const [exporting, setExporting] = useState(false)
+  const [attempts, setAttempts] = useState<AttemptMeta[]>([])
+  const [compareAttempts, setCompareAttempts] = useState<AttemptData[]>([])
 
   const fetchData = useCallback(async () => {
     if (!roundId || !studentId) return
@@ -370,6 +421,17 @@ export default function StudentDetail() {
         return
       }
       setStudent(ds.student)
+      setSubmissionId(ds.submissionId)
+      setRoundName(demoRound.name)
+      setAttempts([
+        {
+          id: ds.submissionId,
+          attemptNumber: 1,
+          isCurrent: true,
+          submittedAt: null,
+        },
+      ])
+      setCompareAttempts([])
 
       const mapped: QuestionWithResponse[] = ds.responses.map((r) => {
         const question = demoQuestions.find((q) => q.id === r.questionId)!
@@ -394,23 +456,97 @@ export default function StudentDetail() {
       if (sErr) throw sErr
       setStudent(studentData as Student)
 
-      // Fetch submission for this round
-      const { data: submission, error: subErr } = await supabase
+      // Fetch round name (for export filename)
+      const { data: roundData } = await supabase
+        .from('quiz_rounds')
+        .select('name')
+        .eq('id', roundId)
+        .single()
+      if (roundData) setRoundName((roundData as { name: string }).name)
+
+      // Fetch ALL attempts for this (student, round).
+      const { data: allAttempts, error: attemptsErr } = await supabase
         .from('submissions')
-        .select('id')
+        .select('id, attempt_number, is_current, submitted_at')
         .eq('student_id', studentId)
         .eq('round_id', roundId)
-        .single()
+        .order('attempt_number', { ascending: true })
 
-      if (subErr) throw subErr
+      if (attemptsErr) throw attemptsErr
 
-      // Fetch all responses with their questions
+      const attemptList: AttemptMeta[] = (allAttempts || []).map((a) => ({
+        id: (a as { id: string }).id,
+        attemptNumber: (a as { attempt_number: number }).attempt_number,
+        isCurrent: (a as { is_current: boolean }).is_current,
+        submittedAt: (a as { submitted_at: string | null }).submitted_at,
+      }))
+
+      if (attemptList.length === 0) {
+        throw new Error('No submission found for this student in this round')
+      }
+
+      setAttempts(attemptList)
+
+      // Default to the current attempt (freshest one flagged is_current).
+      const currentAttempt = attemptList.find((a) => a.isCurrent) || attemptList[attemptList.length - 1]
+      const targetSubmissionId = currentAttempt.id
+      setSubmissionId(targetSubmissionId)
+
+      // Fetch responses for the selected attempt only.
       const { data: responses, error: rErr } = await supabase
         .from('responses')
         .select('*, questions(*)')
-        .eq('submission_id', submission.id)
+        .eq('submission_id', targetSubmissionId)
 
       if (rErr) throw rErr
+
+      // If more than 1 attempt, prefetch the comparison payload so the Compare tab is instant.
+      if (attemptList.length > 1) {
+        const allIds = attemptList.map((a) => a.id)
+        const { data: allResponses } = await supabase
+          .from('responses')
+          .select('submission_id, question_id, raw_response, grade, admin_override_grade, confidence, questions(*)')
+          .in('submission_id', allIds)
+
+        type CompareRow = {
+          submission_id: string
+          question_id: string
+          raw_response: string | null
+          grade: GradeValue
+          admin_override_grade: string | null
+          confidence: number | null
+          questions: Question
+        }
+        const rowsTyped = (allResponses || []) as unknown as CompareRow[]
+
+        const byAttempt = new Map<string, CompareRow[]>()
+        for (const r of rowsTyped) {
+          const list = byAttempt.get(r.submission_id) || []
+          list.push(r)
+          byAttempt.set(r.submission_id, list)
+        }
+
+        const prepared: AttemptData[] = attemptList.map((a) => {
+          const rows = byAttempt.get(a.id) || []
+          return {
+            attemptNumber: a.attemptNumber,
+            isCurrent: a.isCurrent,
+            submittedAt: a.submittedAt,
+            responses: rows.map((r) => ({
+              questionId: r.question_id,
+              question: r.questions,
+              rawResponse: r.raw_response,
+              grade: r.grade,
+              adminOverrideGrade: r.admin_override_grade,
+              confidence: r.confidence,
+              effectiveGrade: (r.admin_override_grade || r.grade || 'pending') as string,
+            })),
+          }
+        })
+        setCompareAttempts(prepared)
+      } else {
+        setCompareAttempts([])
+      }
 
       // Map to our display type
       const mapped: QuestionWithResponse[] = (responses || []).map((r) => {
@@ -448,9 +584,53 @@ export default function StudentDetail() {
     fetchData()
   }, [fetchData])
 
+  // ── Attempt selector ──────────────────────────────────────────────────────
+
+  const selectAttempt = async (nextSubmissionId: string) => {
+    if (nextSubmissionId === submissionId) return
+    setSubmissionId(nextSubmissionId)
+
+    if (IS_DEMO) return
+
+    try {
+      const { data: responses, error: rErr } = await supabase
+        .from('responses')
+        .select('*, questions(*)')
+        .eq('submission_id', nextSubmissionId)
+
+      if (rErr) throw rErr
+
+      const mapped: QuestionWithResponse[] = (responses || []).map((r) => {
+        const question = r.questions as unknown as Question
+        const effectiveGrade = r.admin_override_grade || r.grade || 'pending'
+        return {
+          question,
+          response: {
+            id: r.id,
+            questionId: r.question_id,
+            rawResponse: r.raw_response,
+            grade: r.grade,
+            confidence: r.confidence,
+            aiReasoning: r.ai_reasoning,
+            modelUsed: r.model_used,
+            adminOverrideGrade: r.admin_override_grade,
+            adminNotes: r.admin_notes,
+          },
+          effectiveGrade,
+        }
+      })
+      mapped.sort((a, b) => a.question.question_number - b.question.question_number)
+      setItems(mapped)
+    } catch (err) {
+      toast.error('Failed to load attempt', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      })
+    }
+  }
+
   // ── Override handler ─────────────────────────────────────────────────────
 
-  const handleOverride = async (responseId: string, grade: 'correct' | 'incorrect' | null) => {
+  const handleOverride = async (responseId: string, grade: 'correct' | 'incorrect' | 'partial' | null) => {
     // Optimistic update
     setItems((prev) =>
       prev.map((item) => {
@@ -630,13 +810,80 @@ export default function StudentDetail() {
       </div>
 
       {/* Student header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{student.display_name}</h1>
-        <p className="text-sm text-muted-foreground">{student.email}</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{student.display_name}</h1>
+          <p className="text-sm text-muted-foreground">{student.email}</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!submissionId || exporting}
+          onClick={async () => {
+            if (!submissionId) return
+            setExporting(true)
+            try {
+              await exportStudentGradesCsv(submissionId, { roundName })
+              toast.success('Result exported')
+            } catch (err) {
+              toast.error('Export failed', {
+                description: err instanceof Error ? err.message : 'Unknown error',
+              })
+            } finally {
+              setExporting(false)
+            }
+          }}
+        >
+          {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+          Export Result
+        </Button>
       </div>
 
+      {/* Attempt selector (only visible when 2+ attempts exist) */}
+      {attempts.length > 1 && (
+        <div className="mb-6 flex items-center gap-3">
+          <span className="text-xs font-medium text-muted-foreground">Viewing</span>
+          <Select value={submissionId || undefined} onValueChange={selectAttempt}>
+            <SelectTrigger className="w-56">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[...attempts].reverse().map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  Attempt {a.attemptNumber}
+                  {a.isCurrent ? ' (current)' : ''}
+                  {a.submittedAt ? ` — ${new Date(a.submittedAt).toLocaleDateString()}` : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {attempts.length > 1 ? (
+        <Tabs defaultValue="detail">
+          <TabsList>
+            <TabsTrigger value="detail">Detail</TabsTrigger>
+            <TabsTrigger value="compare">Compare Attempts</TabsTrigger>
+          </TabsList>
+          <TabsContent value="compare" className="mt-4">
+            <AttemptComparison attempts={compareAttempts} />
+          </TabsContent>
+          <TabsContent value="detail" className="mt-4">
+            {renderDetailView()}
+          </TabsContent>
+        </Tabs>
+      ) : (
+        renderDetailView()
+      )}
+    </div>
+  )
+
+  function renderDetailView() {
+    return (
+      <>
       {/* Score summary */}
-      <div className="grid grid-cols-5 gap-3 mb-8">
+      <div className={`grid ${scores.partial > 0 ? 'grid-cols-6' : 'grid-cols-5'} gap-3 mb-8`}>
         {/* Big score card */}
         <Card className="col-span-1 row-span-1">
           <CardContent className="pt-5 pb-5 flex flex-col items-center justify-center h-full">
@@ -669,6 +916,18 @@ export default function StudentDetail() {
           </CardContent>
         </Card>
 
+        {scores.partial > 0 && (
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[10px] font-bold text-amber-600 leading-none">½</span>
+                <p className="text-xs font-medium text-muted-foreground">Half</p>
+              </div>
+              <p className="text-2xl font-bold text-amber-700">{scores.partial}</p>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center gap-1.5 mb-1">
@@ -700,6 +959,12 @@ export default function StudentDetail() {
                 style={{ width: `${(scores.correct / scores.totalScored) * 100}%` }}
               />
             )}
+            {scores.partial > 0 && (
+              <div
+                className="bg-amber-400 transition-all"
+                style={{ width: `${(scores.partial / scores.totalScored) * 100}%` }}
+              />
+            )}
             {scores.incorrect > 0 && (
               <div
                 className="bg-red-500 transition-all"
@@ -721,7 +986,7 @@ export default function StudentDetail() {
           </div>
           <div className="flex justify-between mt-1">
             <span className="text-xs text-muted-foreground">
-              {scores.correct + scores.incorrect + scores.clarify} graded of {scores.totalScored} scored
+              {scores.correct + scores.incorrect + scores.partial + scores.clarify} graded of {scores.totalScored} scored
             </span>
             {scores.pending > 0 && (
               <span className="text-xs text-yellow-700">{scores.pending} pending</span>
@@ -889,6 +1154,7 @@ export default function StudentDetail() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  )
+      </>
+    )
+  }
 }

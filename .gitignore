@@ -17,6 +17,9 @@ dist*
 # Seed/test scripts (contain env references)
 scripts/*.mjs
 
+# DB snapshots (contain real student data — never commit)
+scripts/db-snapshot-*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

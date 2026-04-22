@@ -50,6 +50,7 @@ function q(
   keyPoints: string[] = [],
   good: FewShotExample[] = [],
   bad: FewShotExample[] = [],
+  allowPartial = false,
 ): Question {
   return {
     id: `demo-q-${n}`,
@@ -61,6 +62,7 @@ function q(
     key_points: keyPoints,
     question_type: type,
     is_scored: scored,
+    allow_partial_credit: allowPartial,
     few_shot_good: good,
     few_shot_bad: bad,
     doc_context: null,
@@ -103,6 +105,9 @@ export const demoQuestions: Question[] = [
     'Calendar view, Map view, and List view.',
     'list', true,
     ['calendar view', 'map view', 'list view'],
+    [],
+    [],
+    true,
   ),
   q(8, 'Invoicing & Payments', 'How does a technician create an invoice on-site?',
     'From the completed job, tap "Create Invoice", review line items, apply discounts if needed, and send to the customer via email or collect payment on the spot.',
@@ -241,7 +246,7 @@ export const demoStudents: DemoStudent[] = [
     { qNum: 4, grade: 'skipped', conf: null, response: null },
     { qNum: 5, grade: 'correct', conf: 85, response: 'In the Jobs area, click New Job, add the customer and technician, pick a time, and save.' },
     { qNum: 6, grade: 'correct', conf: 97, response: 'Yes' },
-    { qNum: 7, grade: 'clarify', conf: 70, response: 'Calendar and Map.', reasoning: '[Medium confidence] Missing the List view option.' },
+    { qNum: 7, grade: 'partial', conf: 88, response: 'Calendar and Map.', reasoning: 'Student named 2 of the 3 dispatching views (Calendar, Map). Missed List view. Partial credit awarded.' },
     { qNum: 8, grade: 'correct', conf: 86, response: 'From a finished job, create an invoice, review line items, and send it to the customer or take payment.' },
     { qNum: 9, grade: 'correct', conf: 91, response: 'Cards, ACH, cash, checks.' },
     { qNum: 10, grade: 'correct', conf: 97, response: 'Yes' },
@@ -259,6 +264,7 @@ export interface DemoStudentRow {
   submissionId: string
   correct: number
   incorrect: number
+  partial: number
   clarify: number
   pending: number
   skipped: number
@@ -269,12 +275,16 @@ export interface DemoStudentRow {
 export function getDemoStudentRows(): DemoStudentRow[] {
   return demoStudents
     .map((ds) => {
-      const counts = { correct: 0, incorrect: 0, clarify: 0, pending: 0, skipped: 0 }
+      const counts = { correct: 0, incorrect: 0, partial: 0, clarify: 0, pending: 0, skipped: 0 }
       for (const r of ds.responses) {
-        counts[r.grade]++
+        const effective = (r.adminOverrideGrade as GradeValue | null) || r.grade
+        if (effective in counts) {
+          counts[effective as keyof typeof counts]++
+        }
       }
-      const totalScored = counts.correct + counts.incorrect + counts.clarify + counts.pending
-      const scorePercent = totalScored > 0 ? Math.round((counts.correct / totalScored) * 100) : 0
+      const totalScored = counts.correct + counts.incorrect + counts.partial + counts.clarify + counts.pending
+      const points = counts.correct + 0.5 * counts.partial
+      const scorePercent = totalScored > 0 ? Math.round((points / totalScored) * 100) : 0
 
       return {
         studentId: ds.student.id,

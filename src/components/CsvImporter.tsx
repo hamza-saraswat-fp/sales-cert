@@ -22,6 +22,7 @@ import {
   Loader2,
   Users,
   HelpCircle,
+  RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { parseCsvFile, type ParsedCsvData } from '@/lib/csv-parser'
@@ -33,10 +34,14 @@ import type { Question } from '@/lib/types'
 
 type ImportStage = 'upload' | 'preview' | 'importing' | 'done' | 'error'
 
+type RetakeMode = 'retake' | 'skip'
+
 interface ImportSummary {
   studentsCreated: number
   studentsExisting: number
   submissionsCreated: number
+  retakesCreated: number
+  studentsSkipped: number
   responsesCreated: number
 }
 
@@ -66,6 +71,9 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  // Existing students detected in this round — surfaced to pick retake vs skip.
+  const [existingEmails, setExistingEmails] = useState<Set<string>>(new Set())
+  const [retakeMode, setRetakeMode] = useState<RetakeMode>('retake')
 
   // ── File handling ──────────────────────────────────────────────────────────
 
@@ -81,8 +89,41 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
         const parsed = await parseCsvFile(file)
         const matches = matchQuestions(parsed.questionHeaders, questions)
 
+        // Pre-flight: find which uploaded emails already have a submission in this round.
+        const uploadedEmails = parsed.rows.map((r) => r.email)
+        let existing = new Set<string>()
+        if (uploadedEmails.length > 0) {
+          // 1. Find student rows for these emails.
+          const { data: studentRows } = await supabase
+            .from('students')
+            .select('id, email')
+            .in('email', uploadedEmails)
+
+          const studentsByEmail = new Map<string, string>()
+          for (const s of studentRows || []) {
+            studentsByEmail.set((s as { email: string }).email, (s as { id: string }).id)
+          }
+
+          const studentIds = Array.from(studentsByEmail.values())
+          if (studentIds.length > 0) {
+            // 2. Find submissions for those students in this round.
+            const { data: subRows } = await supabase
+              .from('submissions')
+              .select('student_id')
+              .eq('round_id', roundId)
+              .in('student_id', studentIds)
+
+            const idsWithSubs = new Set((subRows || []).map((s) => (s as { student_id: string }).student_id))
+            for (const [email, id] of studentsByEmail) {
+              if (idsWithSubs.has(id)) existing.add(email)
+            }
+          }
+        }
+
         setCsvData(parsed)
         setMatchResult(matches)
+        setExistingEmails(existing)
+        setRetakeMode('retake')
         setStage('preview')
       } catch (err) {
         setErrorMessage(
@@ -91,7 +132,7 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
         setStage('error')
       }
     },
-    [questions]
+    [questions, roundId]
   )
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +168,8 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
       let studentsCreated = 0
       let studentsExisting = 0
       let submissionsCreated = 0
+      let retakesCreated = 0
+      let studentsSkipped = 0
       let responsesCreated = 0
 
       for (const row of csvData.rows) {
@@ -158,36 +201,39 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
         }
         updateProgress()
 
-        // 2. Create submission (upsert by student_id + round_id)
+        // 2. Find existing submissions for this (student, round); decide retake vs first vs skip.
         const submittedAt = row.timestamp
           ? parseGoogleFormsTimestamp(row.timestamp)
           : null
 
-        const { data: existingSub } = await supabase
+        const { data: priorSubs } = await supabase
           .from('submissions')
-          .select('id')
+          .select('id, attempt_number, is_current')
           .eq('student_id', studentId)
           .eq('round_id', roundId)
-          .single()
+          .order('attempt_number', { ascending: false })
+
+        const hasPrior = (priorSubs || []).length > 0
+
+        if (hasPrior && retakeMode === 'skip') {
+          studentsSkipped++
+          updateProgress() // submission step
+          updateProgress() // responses step (we're not creating any)
+          continue
+        }
 
         let submissionId: string
 
-        if (existingSub) {
-          submissionId = existingSub.id
-          // Update the submitted_at if we have a newer timestamp
-          if (submittedAt) {
-            await supabase
-              .from('submissions')
-              .update({ submitted_at: submittedAt })
-              .eq('id', submissionId)
-          }
-        } else {
+        if (!hasPrior) {
+          // First attempt.
           const { data: newSub, error: subErr } = await supabase
             .from('submissions')
             .insert({
               student_id: studentId,
               round_id: roundId,
               submitted_at: submittedAt,
+              attempt_number: 1,
+              is_current: true,
             })
             .select('id')
             .single()
@@ -195,26 +241,47 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
           if (subErr) throw new Error(`Failed to create submission for ${row.email}: ${subErr.message}`)
           submissionId = newSub.id
           submissionsCreated++
+        } else {
+          // Retake: demote existing "current" attempts, create new attempt N+1.
+          const currentId = priorSubs!.find((s) => s.is_current)?.id
+          if (currentId) {
+            await supabase
+              .from('submissions')
+              .update({ is_current: false })
+              .eq('id', currentId)
+          }
+
+          const nextAttemptNumber = (priorSubs![0].attempt_number ?? 0) + 1
+
+          const { data: newSub, error: subErr } = await supabase
+            .from('submissions')
+            .insert({
+              student_id: studentId,
+              round_id: roundId,
+              submitted_at: submittedAt,
+              attempt_number: nextAttemptNumber,
+              is_current: true,
+            })
+            .select('id')
+            .single()
+
+          if (subErr) throw new Error(`Failed to create retake for ${row.email}: ${subErr.message}`)
+          submissionId = newSub.id
+          retakesCreated++
         }
         updateProgress()
 
-        // 3. Create response records for each matched question
-        const responseRows = matched
-          .map((m) => {
-            const rawResponse = row.responses[m.csvHeader]
-            return {
-              submission_id: submissionId,
-              question_id: m.questionId!,
-              raw_response: rawResponse || null,
-              grade: 'pending' as const,
-            }
-          })
+        // 3. Create response records for each matched question (fresh rows on new submission).
+        const responseRows = matched.map((m) => ({
+          submission_id: submissionId,
+          question_id: m.questionId!,
+          raw_response: row.responses[m.csvHeader] || null,
+          grade: 'pending' as const,
+        }))
 
-        // Insert in batches of 50
         for (let i = 0; i < responseRows.length; i += 50) {
           const batch = responseRows.slice(i, i + 50)
 
-          // Use upsert to handle re-imports gracefully
           const { error: respErr } = await supabase
             .from('responses')
             .upsert(batch, {
@@ -232,12 +299,15 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
         studentsCreated,
         studentsExisting,
         submissionsCreated,
+        retakesCreated,
+        studentsSkipped,
         responsesCreated,
       })
       setStage('done')
-      toast.success('CSV import complete!', {
-        description: `${csvData.rows.length} students, ${responsesCreated} responses imported.`,
-      })
+      const parts: string[] = [`${csvData.rows.length - studentsSkipped} imported`]
+      if (retakesCreated > 0) parts.push(`${retakesCreated} retakes`)
+      if (studentsSkipped > 0) parts.push(`${studentsSkipped} skipped`)
+      toast.success('CSV import complete!', { description: parts.join(', ') })
       onImportComplete()
     } catch (err) {
       setErrorMessage(
@@ -257,6 +327,7 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
     setImportProgress(0)
     setImportSummary(null)
     setErrorMessage(null)
+    setExistingEmails(new Set())
   }
 
   // ── Render: Upload stage ───────────────────────────────────────────────────
@@ -304,6 +375,7 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
   // ── Render: Preview stage ──────────────────────────────────────────────────
 
   if (stage === 'preview' && csvData && matchResult) {
+    const existingCount = existingEmails.size
     return (
       <div className="space-y-4">
         {/* Summary cards */}
@@ -347,6 +419,54 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
           </Card>
         </div>
 
+        {/* Retake detection */}
+        {existingCount > 0 && (
+          <Alert>
+            <RefreshCw className="size-4" />
+            <AlertTitle>Retake detected</AlertTitle>
+            <AlertDescription>
+              <p className="text-sm mb-2">
+                {existingCount} of {csvData.rows.length} students already have a
+                submission in this round.
+              </p>
+              <div className="space-y-2 mt-2">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retake-mode"
+                    value="retake"
+                    checked={retakeMode === 'retake'}
+                    onChange={() => setRetakeMode('retake')}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Save as retake</p>
+                    <p className="text-xs text-muted-foreground">
+                      Preserve their first attempt. Create a new attempt for comparison.
+                    </p>
+                  </div>
+                </label>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="retake-mode"
+                    value="skip"
+                    checked={retakeMode === 'skip'}
+                    onChange={() => setRetakeMode('skip')}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Skip existing students</p>
+                    <p className="text-xs text-muted-foreground">
+                      Only import rows for brand-new students.
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Student preview */}
         <div>
           <h4 className="text-sm font-medium mb-2">Student Preview</h4>
@@ -362,9 +482,19 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
                 const filled = Object.values(row.responses).filter(
                   (v) => v !== null
                 ).length
+                const isExisting = existingEmails.has(row.email)
                 return (
                   <TableRow key={row.email}>
-                    <TableCell className="text-sm">{row.email}</TableCell>
+                    <TableCell className="text-sm">
+                      <div className="flex items-center gap-2">
+                        {row.email}
+                        {isExisting && (
+                          <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                            retake
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right text-sm text-muted-foreground">
                       {filled}/{matchResult.matchedCount}
                     </TableCell>
@@ -487,9 +617,13 @@ export function CsvImporter({ roundId, questions, onImportComplete }: CsvImporte
         <div>
           <p className="font-medium text-lg">Import Complete!</p>
           <p className="text-sm text-muted-foreground mt-1">
-            {importSummary.studentsCreated} new students,{' '}
-            {importSummary.studentsExisting} existing.{' '}
-            {importSummary.responsesCreated} responses created.
+            {importSummary.studentsCreated} new, {importSummary.studentsExisting} existing.
+            {importSummary.retakesCreated > 0 &&
+              ` ${importSummary.retakesCreated} retakes saved.`}
+            {importSummary.studentsSkipped > 0 &&
+              ` ${importSummary.studentsSkipped} skipped.`}
+            {' '}
+            {importSummary.responsesCreated} responses.
           </p>
         </div>
         <Button variant="outline" onClick={handleReset}>

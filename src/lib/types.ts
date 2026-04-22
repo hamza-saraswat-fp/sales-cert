@@ -28,6 +28,7 @@ export interface Question {
   key_points: string[]
   question_type: QuestionType
   is_scored: boolean
+  allow_partial_credit: boolean
   few_shot_good: FewShotExample[]
   few_shot_bad: FewShotExample[]
   doc_context: string | null
@@ -53,12 +54,14 @@ export interface Submission {
   round_id: string
   submitted_at: string | null
   imported_at: string
+  attempt_number: number
+  is_current: boolean
 }
 
 // ── Responses ────────────────────────────────────────────────────────────────
 
-export type GradeValue = 'correct' | 'incorrect' | 'clarify' | 'pending' | 'skipped'
-export type OverrideGradeValue = 'correct' | 'incorrect' | 'clarify' | null
+export type GradeValue = 'correct' | 'incorrect' | 'partial' | 'clarify' | 'pending' | 'skipped'
+export type OverrideGradeValue = 'correct' | 'incorrect' | 'partial' | 'clarify' | null
 
 export interface Response {
   id: string
@@ -108,7 +111,7 @@ export interface GradingConfig {
 // ── AI Grading Response ──────────────────────────────────────────────────────
 
 export interface AIGradeResult {
-  grade: 'correct' | 'incorrect' | 'clarify'
+  grade: 'correct' | 'incorrect' | 'partial' | 'clarify'
   confidence: number
   reasoning: string
 }
@@ -119,6 +122,7 @@ export interface StudentWithScores extends Student {
   submission_id: string
   correct_count: number
   incorrect_count: number
+  partial_count: number
   clarify_count: number
   pending_count: number
   skipped_count: number

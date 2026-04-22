@@ -142,6 +142,13 @@ function processRawCsv(raw: string[][]): ParsedCsvData {
       )
     }
 
+    if (row.length < headers.length) {
+      warnings.push(
+        `⚠️ Row ${rowIdx + 2} (${email}): has ${row.length} columns but header has ${headers.length}. ` +
+          `This usually means a multi-line cell wasn't properly quoted. Responses may be missing.`
+      )
+    }
+
     if (seenEmails.has(email)) {
       warnings.push(
         `Row ${rowIdx + 2}: duplicate email "${email}" – only the first entry will be used.`
@@ -177,7 +184,11 @@ function processRawCsv(raw: string[][]): ParsedCsvData {
       responses[header] = value
     }
 
-    if (emptyCount > questionColIndices.length * 0.5) {
+    if (questionColIndices.length > 0 && emptyCount >= questionColIndices.length * 0.9) {
+      warnings.push(
+        `⚠️ ${email} appears to have a parse error: ${emptyCount}/${questionColIndices.length} responses are empty. Check the raw CSV row for malformed data before importing.`
+      )
+    } else if (emptyCount > questionColIndices.length * 0.5) {
       warnings.push(
         `${email}: more than half the responses are empty (${emptyCount}/${questionColIndices.length}).`
       )

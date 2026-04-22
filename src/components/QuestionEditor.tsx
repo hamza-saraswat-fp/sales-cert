@@ -53,6 +53,7 @@ export function QuestionEditor({
   const [keyPoints, setKeyPoints] = useState<string[]>([...question.key_points])
   const [newKeyPoint, setNewKeyPoint] = useState('')
   const [isScored, setIsScored] = useState(question.is_scored)
+  const [allowPartialCredit, setAllowPartialCredit] = useState(question.allow_partial_credit)
   const [questionType, setQuestionType] = useState<QuestionType>(question.question_type)
   const [fewShotGood, setFewShotGood] = useState<FewShotExample[]>([...question.few_shot_good])
   const [fewShotBad, setFewShotBad] = useState<FewShotExample[]>([...question.few_shot_bad])
@@ -73,6 +74,7 @@ export function QuestionEditor({
     setAnswerKey(question.answer_key)
     setKeyPoints([...question.key_points])
     setIsScored(question.is_scored)
+    setAllowPartialCredit(question.allow_partial_credit)
     setQuestionType(question.question_type)
     setFewShotGood([...question.few_shot_good])
     setFewShotBad([...question.few_shot_bad])
@@ -128,6 +130,7 @@ export function QuestionEditor({
       answer_key: answerKey,
       key_points: keyPoints,
       is_scored: isScored,
+      allow_partial_credit: allowPartialCredit,
       question_type: questionType,
       few_shot_good: fewShotGood,
       few_shot_bad: fewShotBad,
@@ -189,8 +192,8 @@ export function QuestionEditor({
         </DialogHeader>
 
         <div className="space-y-6 mt-2">
-          {/* Type + Scored */}
-          <div className="flex items-center gap-6">
+          {/* Type + Scored + Partial Credit */}
+          <div className="flex items-center gap-6 flex-wrap">
             <div className="space-y-1.5">
               <Label className="text-xs">Question Type</Label>
               <Select value={questionType} onValueChange={(v) => setQuestionType(v as QuestionType)}>
@@ -209,6 +212,19 @@ export function QuestionEditor({
             <div className="flex items-center gap-2 pt-5">
               <Switch checked={isScored} onCheckedChange={setIsScored} />
               <Label className="text-sm">Scored</Label>
+            </div>
+            <div className="flex flex-col pt-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={allowPartialCredit}
+                  onCheckedChange={setAllowPartialCredit}
+                  disabled={!isScored}
+                />
+                <Label className="text-sm">Allow partial credit</Label>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                Enable for 2-part questions so half-right answers get half credit.
+              </p>
             </div>
           </div>
 
